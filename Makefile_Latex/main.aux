@@ -1,0 +1,96 @@
+\relax 
+\providecommand\zref@newlabel[2]{}
+\providecommand \babel@aux [2]{\global \let \babel@toc \@gobbletwo }
+\@nameuse{bbl@beforestart}
+\catcode `"\active 
+\catcode `<\active 
+\catcode `>\active 
+\@nameuse{es@quoting}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\babel@aux{spanish}{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Propuesta del Proyecto y Objetivos}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Descripción de la Asignatura y el Reto}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Ejercicios Propuestos: Ecuación de Poisson 2D}{1}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Implementación de la Ecuación de Poisson 2D con OpenMP}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Códigos Fuente C++}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Versión 1: Serial (Código Base)}{3}{subsubsection.2.1.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Implementación Serial de la Ecuación de Poisson.}}{3}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Versión 2: Parallel For (Collapse)}{5}{subsubsection.2.1.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces Implementación utilizando \texttt  {\#pragma omp parallel for collapse(2)}.}}{5}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.3}Versión 3: Región Crítica (Critical)}{7}{subsubsection.2.1.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces Implementación sincronizada con \texttt  {\#pragma omp critical}.}}{7}{lstlisting.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.4}Versión 4: Operaciones Atómicas (Atomic)}{9}{subsubsection.2.1.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces Implementación sincronizada mediante \texttt  {\#pragma omp atomic}.}}{9}{lstlisting.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.5}Versión 5: Tareas por Bloques (Task)}{11}{subsubsection.2.1.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}{\ignorespaces Implementación orientada a tareas empleando \texttt  {\#pragma omp task}.}}{11}{lstlisting.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Automatización y Medición de Tiempos}{13}{subsection.2.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6}{\ignorespaces Script \texttt  {benchmark.sh} para el registro de tiempos de ejecución.}}{13}{lstlisting.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {7}{\ignorespaces Archivo \texttt  {Makefile} para la automatización del proyecto.}}{14}{lstlisting.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Visualización de Resultados}{16}{subsection.2.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {8}{\ignorespaces Script \texttt  {graficas.py} para la generación de superficies 3D.}}{16}{lstlisting.8}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Perfil de distribución de potencial obtenido con la versión Serial.}}{17}{figure.caption.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Perfil de distribución de potencial obtenido mediante paralelización con \texttt  {collapse(2)}.}}{18}{figure.caption.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Perfil de distribución de potencial obtenido utilizando una sección \texttt  {critical}.}}{18}{figure.caption.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Perfil de distribución de potencial obtenido utilizando control \texttt  {atomic}.}}{19}{figure.caption.8}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Perfil de distribución de potencial obtenido mediante el enfoque orientado a tareas (\texttt  {task}).}}{19}{figure.caption.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Resolución Multiproblema de la Ecuación de Poisson}{20}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Cabecera Auxiliar Matemática (\texttt  {utils.h})}{20}{subsection.3.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {9}{\ignorespaces Cabecera \texttt  {utils.h} para la gestión de las cuatro ecuaciones diferenciales.}}{20}{lstlisting.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Implementaciones Multiproblema en C++}{22}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Implementación: Atomic}{22}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {10}{\ignorespaces Versión iterativa con \texttt  {\#pragma omp atomic}.}}{22}{lstlisting.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Implementación: Critical}{23}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {11}{\ignorespaces Versión iterativa con \texttt  {\#pragma omp critical}.}}{23}{lstlisting.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Implementación: Parallel For}{23}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {12}{\ignorespaces Versión con \texttt  {\#pragma omp parallel for collapse(2)}.}}{23}{lstlisting.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Implementación: Serial}{24}{subsubsection.3.2.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {13}{\ignorespaces Versión secuencial base para métricas de aceleración.}}{24}{lstlisting.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.5}Implementación: Task}{25}{subsubsection.3.2.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {14}{\ignorespaces Versión basada en descomposición por tareas (\texttt  {task}).}}{25}{lstlisting.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Automatización: Benchmark y Gráficas}{26}{subsection.3.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {15}{\ignorespaces Script de Benchmark Dinámico para Clúster.}}{26}{lstlisting.15}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {16}{\ignorespaces Script de visualización analítica vs. numérica.}}{27}{lstlisting.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Resultados Gráficos (Analítica vs Numérica)}{28}{subsection.3.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Ejemplo 1 resuelto con método secuencial.}}{29}{figure.caption.10}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Ejemplo 1 resuelto con \texttt  {parallel for collapse}.}}{29}{figure.caption.11}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Ejemplo 1 resuelto con \texttt  {critical}.}}{30}{figure.caption.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Ejemplo 1 resuelto con \texttt  {atomic}.}}{30}{figure.caption.13}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Ejemplo 1 resuelto con \texttt  {task}.}}{31}{figure.caption.14}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Ejemplo 2 resuelto con método secuencial.}}{31}{figure.caption.15}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Ejemplo 2 resuelto con \texttt  {parallel for collapse}.}}{32}{figure.caption.16}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Ejemplo 2 resuelto con \texttt  {critical}.}}{32}{figure.caption.17}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Ejemplo 2 resuelto con \texttt  {atomic}.}}{33}{figure.caption.18}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Ejemplo 2 resuelto con \texttt  {task}.}}{33}{figure.caption.19}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Ejemplo 3 resuelto con método secuencial.}}{34}{figure.caption.20}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces Ejemplo 3 resuelto con \texttt  {parallel for collapse}.}}{34}{figure.caption.21}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {18}{\ignorespaces Ejemplo 3 resuelto con \texttt  {critical}.}}{35}{figure.caption.22}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {19}{\ignorespaces Ejemplo 3 resuelto con \texttt  {atomic}.}}{35}{figure.caption.23}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {20}{\ignorespaces Ejemplo 3 resuelto con \texttt  {task}.}}{36}{figure.caption.24}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {21}{\ignorespaces Ejemplo 4 resuelto con método secuencial.}}{36}{figure.caption.25}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {22}{\ignorespaces Ejemplo 4 resuelto con \texttt  {parallel for collapse}.}}{37}{figure.caption.26}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {23}{\ignorespaces Ejemplo 4 resuelto con \texttt  {critical}.}}{37}{figure.caption.27}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {24}{\ignorespaces Ejemplo 4 resuelto con \texttt  {atomic}.}}{38}{figure.caption.28}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {25}{\ignorespaces Ejemplo 4 resuelto con \texttt  {task}.}}{38}{figure.caption.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Análisis de Rendimiento y Escalabilidad en Clúster}{39}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Caso 1: Malla Pequeña ($50 \times 50$)}{39}{subsection.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {26}{\ignorespaces Tiempos de ejecución para $N=50$. La línea punteada indica el tiempo serial; todos los métodos paralelos son más lentos debido al \textit  {overhead} de OpenMP.}}{39}{figure.caption.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Caso 2: Malla Mediana ($250 \times 250$)}{39}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {27}{\ignorespaces Tiempos de ejecución para $N=250$. Se observa un \textit  {speedup} considerable con 12 hilos, seguido de una degradación por contención de memoria al saltar a 24 hilos.}}{40}{figure.caption.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Comparativa de Directivas}{40}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Caso 3: Malla Masiva ($1000 \times 1000$) y Límite Arquitectónico}{41}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {28}{\ignorespaces Tiempos de ejecución para la malla masiva de $1000 \times 1000$. La línea punteada superior (fuera del cuadro principal) representa el tiempo serial de $\sim $5.2 horas. Se destaca la escalabilidad óptima del \texttt  {parallel for} y el aumento de tiempos por contención en las estrategias de sincronización estricta a altos conteos de hilos.}}{41}{figure.caption.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Visualización de la Escalabilidad Multihilo}{42}{subsection.4.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {29}{\ignorespaces Tiempos de ejecución para la malla de $100 \times 100$. El tiempo secuencial es de 2.73 s. El punto de máxima eficiencia se alcanza con 24 hilos ($\sim 0.43$ s), tras lo cual la sobrecarga de comunicación penaliza el rendimiento. La directiva \texttt  {task} resulta severamente ineficiente.}}{42}{figure.caption.33}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {30}{\ignorespaces Tiempos de ejecución para la malla de $250 \times 250$. El tiempo base secuencial asciende a 88.6 s. El sistema encuentra su punto óptimo de aceleración alrededor de los 48 hilos ($\sim 5.1$ s), evidenciando un \textit  {speedup} superior a 17x.}}{43}{figure.caption.34}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {31}{\ignorespaces Tiempos de ejecución para la malla masiva de $500 \times 500$. La convergencia en un solo núcleo requiere 1174 s (casi 20 minutos). Las directivas de bucle y variables compartidas logran escalar eficientemente hasta los 64 hilos, reduciendo el cálculo a $\sim 41.5$ s.}}{43}{figure.caption.35}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {32}{\ignorespaces Tiempos de ejecución para la malla de $750 \times 750$. Bajo esta carga extrema, la ejecución serial sobrepasa los 5233 s. El paralelismo demuestra una escalabilidad sobresaliente y continua, consolidando su menor tiempo (154.2 s) con la capacidad máxima de 64 hilos.}}{44}{figure.caption.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Análisis de Convergencia: Relajación Asíncrona en Memoria Compartida}{44}{subsection.4.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Número total de iteraciones necesarias para la convergencia variando el tamaño de la malla ($N$) y el número de hilos, comparando los dos métodos de sincronización explícita.}}{45}{table.caption.37}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:convergencia_iteraciones}{{1}{45}{Número total de iteraciones necesarias para la convergencia variando el tamaño de la malla ($N$) y el número de hilos, comparando los dos métodos de sincronización explícita}{table.caption.37}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}1. Carga Computacional Ligada a la Geometría}{45}{subsubsection.4.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.2}2. Relajación Asíncrona (Caótica) y Variación Numérica}{45}{subsubsection.4.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Desarrollo y Reflexiones del Taller}{46}{subsection.4.7}\protected@file@percent }
+\gdef \@abspage@last{48}
