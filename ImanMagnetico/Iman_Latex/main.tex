@@ -1,0 +1,2197 @@
+\input{lib/config.tex}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\begin{document}
+
+\input{lib/preambulo.tex}
+
+
+\section{Propagación en Océano}
+% =========================
+% Guía de preguntas: El enigma cuántico (Eug Ahne Poc)
+% Copiar/pegar en tu .tex
+% =========================
+\subsection{Código fortran propagación en océano}
+Primer bloque, configuración e inicialización
+\begin{lstlisting}
+          PROGRAM ACUSTICA
+C======================================================================
+C======================================================================
+C     PROPAGACION ACUSTICA EN EL OCEANO
+C======================================================================
+C======================================================================
+      IMPLICIT REAL*8(A-H,O-Z)
+      CHARACTER MODOS*10, TL*10, RAYOS*10
+      PARAMETER (N=4, NPT=1000, NBMAX=1000, N1=3500)
+C
+      COMPLEX*16 SUM,CI
+C
+      COMMON /DET/W,HZ,NN
+C
+      DIMENSION Y(N), DYDX(N), YOUT(N),
+     &          XB1(NBMAX), XB2(NBMAX), PSIF(NPT),
+     &          PSI(100,NPT), C(NPT),
+     &          DIAG(NPT), SUPERD(NPT), SUBD(NPT),
+     &          VK(NPT), VKM1(NPT)
+      REAL*8 MODO(NBMAX)
+      EXTERNAL DETERM
+      PI=4.*DATAN(1.D0)
+      CI=(0.D0,1.D0)
+C======================================================================
+      WRITE (6,*) 'PROFUNDIDAD DEL FONDO (MTS.) ? '
+      READ  (5,*) D
+      WRITE (6,*) 'PROFUNDIDAD DE LA FUENTE (MTS.)? '
+      READ  (5,*) Z0
+      WRITE (6,*) 'CUAL ES LA FRECUENCIA DE LA SENAL? '
+      READ  (5,*) W
+      WRITE (6,*) 'CUAL ES EL CONO DE EMISION DE LOS RAYOS '
+      WRITE (6,*) 'TETA MINIMO EN GRADOS '
+      READ  (5,*) NTMIN
+      WRITE (6,*) 'TETA MAXIMO EN GRADOS '
+      READ  (5,*) NTMAX
+      WRITE (6,*) 'HASTA QUE RANGO DESEA DIBUJAR (KM.)? '
+      READ  (5,*) PRR
+      PRR=1000.*PRR
+      WRITE (6,*) 'NOMBRE DEL ARCHIVO PARA RAYOS '
+      READ  (5,*) RAYOS
+      OPEN  (97,FILE=RAYOS)
+      WRITE (6,*) 'ARCHIVO PARA LOS DATOS DE LOS MODOS '
+      READ  (5,*) MODOS
+      OPEN  (98,FILE=MODOS)
+      WRITE (6,*) 'NOMBRE DEL ARCHIVO PARA TL '
+      READ  (5,*) TL
+      OPEN  (99,FILE=TL)
+\end{lstlisting}
+En este primer bloque se prepara la memoria y se piden los datos. Haciendo uso de 'IMPLICIT REAL*8' y 'COMPLEX*16' se establece que los números reales tendrán doble precisión, 64 bits, y que los números complejos tendrá 128 bits, se usan números complejos ya que la ecuación de Helmholtz utiliza fases de onda.\\
+Con los comandos 'WRITE' y 'READ' se van a preguntar y almacenar las variables físicas, se va a guardar la profundidad del mar (D), la profundidad de la fuente ($z_0$), la frecuencia de la onda ($\omega$), angulo del cono de emisión de los rayos en grados, rango máximo y los nombres de los archivos donde se va a guardar la información.\\
+
+Segundo bloque, el trazado de los rayos
+\begin{lstlisting}
+    C======================================================================
+C     TRAZADO DE RAYOS
+      HS=.5                       ! PASO PARA S
+                                  ! EN LA INTEGRACION
+      DO NAN=NTMIN,NTMAX
+      PHI=FLOAT(NAN)
+      S=0.D0                      ! ARGUMENTO INICIAL
+C                                 ! CONDICIONES INICIALES
+      CS=VSON(Z0)
+      Y(1)=0.D0
+      Y(2)=Z0
+      Y(3)=DCOS(-PHI*PI/180.D0)/CS
+      Y(4)=DSIN(-PHI*PI/180.D0)/CS
+      CALL DERIVS(Y,DYDX)
+\end{lstlisting}
+'HS=.5' es el tamaño del paso en metros, que sería medio metros. 'DO NAN=NTMIN,NTMAX' es el bucle principal, que va a recorrer entre los angulos que se hayan especificado. 'S=0.D0' inicializa la posición del rayo en cero. Luego se construye el vector 'Y', este tendrá cuatro argumentos y representará el estado del rayo en cualquier momento dado. 'Y(1)' es el rango horizontal o distancia en x, se inicializa en 0. 'Y(2)' es la profundidad Z. 'Y(3)' es la componente horizontal de la lentidud (inverso de la velocidad) del rayo y 'Y(4)' es la componente vertical). Después se utiliza 'DERIVS' para calcular hacia donde apunta la curva en dicho instante. 
+\begin{lstlisting}
+    C                                 ! CICLO SOBRE EL INTERVALO S
+      DO L=1,5*INT(PRR)
+      S=S+HS
+      CALL RK4(Y,DYDX,N,HS,YOUT)
+      DO I=1,N
+C                                 ! CONDICION REBOTE EN LA
+C                                 ! SUPERFICIE O FONDO
+      IF (YOUT(2).LE.1D-003.OR.YOUT(2).GE.D) THEN
+      CS=VSON(Y(2))
+      Y(3)=DCOS(-DATAN(YOUT(4)/YOUT(3)))/CS
+      Y(4)=DSIN(-DATAN(YOUT(4)/YOUT(3)))/CS
+      ELSE
+      Y(I)=YOUT(I)
+      END IF
+      END DO
+      IF(MOD(L,100).EQ.0)
+     &  WRITE (97,'(I4,2F16.6)') NAN, YOUT(1),YOUT(2)
+      IF(YOUT(1).GE.PRR) GOTO 100
+      CALL DERIVS(Y,DYDX)
+      END DO
+100   WRITE (97,'()')
+      END DO
+\end{lstlisting}
+El primer DO avanza hasta el rango máximo 'PRR'. Luego se llama al método Runge Kutta 4, toma la posición actual, mira la curvatura 'DYDX' avanza 'HS' y arroja la nueva posición 'YOUT'. Se pone un IF para tratar los casos cuando el rayo choque con el fondo del mar o con la superficie, en alguno de estos dos casos se genera un rebote con el mismo ángulo de incidencia en las variables de lentitud. Luego se guarda la información de la imagen, con 'MOD(L,100).EQ.0' se establece que cada 100 pasos se guarde la posición. Y acaba el bucle si ya se llegó al rango máximo.
+\begin{lstlisting}
+    C======================================================================
+C     SOLUCION DE LA ECUACION DE HELMHOLTZ MEDIANTE
+C     EL METODO DE MODOS NORMALES
+C     PASO
+      HZ=D/FLOAT(NPT)
+C                                 ! RANGOS DE BUSQUEDA
+                                  ! DE LOS MODOS
+      X1=W/VSON(1300.D0)
+      X2=W/VSON(5000.D0)
+      NB=NBMAX
+      NN=NPT
+      CALL ZBRAK(DETERM,X1,X2,N1,XB1,XB2,NB)
+      JJ=0
+      DO I=1,NB
+      TOL=(1.0D-12)*(XB1(I)+XB2(I))/2.D0
+      RAIZ=ZBRENT(DETERM,XB1(I),XB2(I),TOL)
+      JJ=JJ+1
+      MODO(JJ)=RAIZ
+      WRITE (98,*) JJ,MODO(JJ), W/MODO(JJ)
+      END DO
+\end{lstlisting}
+Se hacen cortes del oceano en capas horizontales, dividiendo la profundidad total 'D' por la cantidad de puntos 'NPT' (1000). 'HZ' será el grosos de cada capa en metros. La variable 'X' es el número de onda horizontal ($k=\omega/c$). Se acota la velocidad de fase entre dos límites, una velocidad mínima y una velocidad máxima ('VSON(1300.D0)' y 'VSON(1500.D0)' respectivamente). Se hace el llamado al método 'ZBRAK' que va a dividir el intervalo 'X1' y 'X2' en varios pedazos y evalúa la función 'DETERM', si la función pasa de un signo a otro se ha encontrado una raíz. En 'NB' se guarda el número de modos que encontró en el intervalo. Ahora se aplica el algoritmo de Brent, que va a buscar el número de raices encontradas con el método anterior en el intervalo especificado, se define una tolerancia y va a finar la búsqueda de las raices para tener un valor exacto con una muy buena precisión. Cuando encuentra la 'RAIZ' (el autovalor $k_n$) lo guarda en la lista 'MODO(JJ)'. Y guarda toda esta información en el archivo que ingrese el usuario.
+\begin{lstlisting}
+    C======================================================================
+C     CALCULO DE LAS FUNCIONES NORMALIZADAS
+      DO I=1,NPT
+      C(I)=VSON(FLOAT(I)*HZ)
+      END DO
+      DO J=1,JJ
+      VP=MODO(J)
+      DO K=1,NPT
+      DIAG(K)=-2.D0+HZ*HZ*(W/C(K))*(W/C(K))-HZ*HZ*VP*VP
+      END DO
+      DO K=1,NPT-1
+      SUPERD(K)=1.D0
+      END DO
+      DO K=2,NPT
+      SUBD(K)=1.D0
+      END DO
+      SUBD(NPT)=2.D0
+C                                 ! VECTOR DE ARRANQUE
+      DO K=1,NPT
+      VK(K)=0.D0
+      END DO
+      VK(1)=1.D0
+C                                 ! BUSQUEDA DE LA FUNCION
+C                                 ! NORMALIZADA
+      DO KK=1, 10
+      CALL TRIDAG(SUBD,DIAG,SUPERD,VK,VKM1,NPT)
+      CALL NORMA(NPT,VKM1,VK)
+      END DO
+      PSIF(J)=VK(INT(Z0/HZ)+1)
+      DO IP=1, INT(D/100.)
+      PROF_DET=(IP-1)*100
+      PSI(IP,J)=VK(INT(PROF_DET/HZ)+1)
+      END DO
+      END DO
+\end{lstlisting}
+Primero calcula y guarda la velocidad del sonido en las rebanadas de profundidad. Ahora con 'DO J=1,JJ' se hace un bucle grande donde se calcula la forma de la onda para cada uno de los modos individuales que se encontraron anteriormente. Para esto se utiliza el método de diferencias finitas para aproximar la segunda derivada de la ecuación de onda. Con lo que el oceano se va a ver reflejar en un sistema de ecuaciones lineales, representado en una matriz tridiagonal. 'DIAG' es la diagonal principal, aquí se tiene el número de onda total y el número de onda del modo. 'SUPERD' y 'SUBD' son las diagonales de unos que se mostró en la teoría. Ahora se busca la forma exacta de la onda 'VK' utilizando el método de iteración inversa, se plantea una onda inicial arbitraria, entra a un bucle que se repite 10 veces, resuelve el sistema matricial usando 'TRIDAG' solucionador de matrices tridiagonales muy optimizado, y normaliza el resultado con 'NORMA'. Al resolver la matriz varias veces se filtran las variaciones numéricas para obtener el autovector. Ahora que se tiene el vector 'VK' donde está la amplitud del modo en todo el oceano, se extrae 'PSIF(J)' que es la fuerza de la fuente, se busca donde está la fuente, si esta está en un antinodo, el modo resonará, pero si está en un nodo, se volverá muy débil. 'PSI(IP,J)' hace un barrido cada 100 metros de profundidad y guarda la amplitud de la onda en esa zona.
+\begin{lstlisting}
+    C======================================================================
+C     DETERMINACION DE LA PERDIDA POR TRANSMISION (EC 20)
+      DO IP=1,INT(D/100)
+      DO I=1,INT(PRR)
+      R=FLOAT(I)
+      SUM=0.D0
+      DO J=1,JJ
+      SUM=SUM+PSIF(J)*PSI(IP,J)*(CDEXP(CI*MODO(J)*R))/
+     &                           DSQRT(MODO(J))
+      END DO
+      PERD=-20.D0*DLOG10(CDABS(SUM*(DSQRT(2.D0*PI/R))))
+      IF(MOD(I,100).EQ.0) WRITE (99,*) R/1000.,-100.*IP,PERD
+      END DO
+      WRITE (99, '()')
+      END DO
+C======================================================================
+      CLOSE (97)
+      CLOSE (98)
+      CLOSE (99)
+      END
+\end{lstlisting}
+En este punto se calcula la presión acústica total sumando la contribución de cada modo individual. El código resuelve esta ecuación,
+
+\begin{equation*}
+    p(r,z) \approx \sqrt{\frac{2\pi}{r}} \sum_{n=1}^{N} \Psi_n(z_s) \Psi_n(z) \frac{e^{i k_n r}}{\sqrt{k_n}}
+\end{equation*}
+
+Luego de esto se convierte lo obtenido a decibeles y pérdida por transmisión,
+
+\begin{equation*}
+    \text{TL} = -20 \log_{10} \left( \left| p(r,z) \right| \right)
+\end{equation*}
+
+Luego se cierran los archivos creados.
+
+\section{Anillo con Campo Magnético}
+% =========================
+% Código Fortran, C++ y Benchmark
+% =========================
+
+
+\subsection{Fundamentación Matemática del Campo Magnético}
+% =========================
+% Subsection de Matemática y Métodos Numéricos
+% =========================
+
+\subsubsection{Ecuaciones Gobernantes y Formulación Potencial}
+El problema físico consiste en determinar el campo magnético generado por un imán cilíndrico hueco con magnetización uniforme $\mathbf{M}$. En ausencia de corrientes libres ($\mathbf{J}_f = 0$), las ecuaciones de Maxwell para la magnetostática se reducen a:
+
+\begin{equation}
+    \nabla \cdot \mathbf{B} = 0
+\end{equation}
+\begin{equation}
+    \nabla \times \mathbf{H} = 0
+\end{equation}
+
+Donde $\mathbf{B}$ es la inducción magnética y $\mathbf{H}$ es la intensidad del campo magnético. La relación constitutiva en el material es $\mathbf{B} = \mu_0 (\mathbf{H} + \mathbf{M})$.
+
+Dado que el rotacional de $\mathbf{H}$ es cero (Eq. 2), podemos definir el campo $\mathbf{H}$ como el gradiente de un potencial magnético escalar, $\Phi$:
+
+\begin{equation}
+    \mathbf{H} = -\nabla \Phi
+\end{equation}
+
+Sustituyendo esta relación en la ley de Gauss para el magnetismo (Eq. 1) y utilizando la relación constitutiva, obtenemos:
+
+\begin{equation}
+    \nabla \cdot \mathbf{B} = \nabla \cdot [\mu_0 (-\nabla \Phi + \mathbf{M})] = 0
+\end{equation}
+
+Asumiendo que $\mu_0$ es constante y reordenando, llegamos a la ecuación de Poisson para el potencial magnético escalar:
+
+\begin{equation}
+    \nabla^2 \Phi = \nabla \cdot \mathbf{M}
+\end{equation}
+
+El término fuente, $\nabla \cdot \mathbf{M}$, representa la densidad volúmica de "carga magnética". Para un imán con magnetización uniforme $\mathbf{M} = M \hat{z}$ dirigido a lo largo del eje del cilindro, este término es cero en el interior del material, pero presenta singularidades (densidades superficiales de carga) en las tapas superior e inferior del imán, donde $\mathbf{M}$ es discontinuo respecto al exterior.
+
+\subsubsection{Coordenadas Cilíndricas y Discretización Numérica}
+Dada la geometría del problema, utilizamos coordenadas cilíndricas $(\rho, \phi, z)$. Asumiendo simetría axial ($\partial/\partial\phi = 0$), el operador Laplaciano escalar se reduce a:
+
+\begin{equation}
+    \nabla^2 \Phi = \frac{\partial^2 \Phi}{\partial \rho^2} + \frac{1}{\rho}\frac{\partial \Phi}{\partial \rho} + \frac{\partial^2 \Phi}{\partial z^2} = f(\rho, z)
+\end{equation}
+
+Donde $f(\rho, z) = \nabla \cdot \mathbf{M}$. Fuera de las interfaces de magnetización, $f=0$, resultando en la ecuación de Laplace. A continuación se presenta el esquema del imán simulado.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/iman.png}
+    \caption{Esquema del imán cilíndrico hueco simulado. Se muestran las dimensiones físicas y las regiones de carga magnética superficial efectiva (+M y -M) debidas a la magnetización uniforme.}
+    \label{fig:iman}
+\end{figure}
+
+Para resolver la ecuación (Eq. 6) numéricamente, discretizamos el dominio $(\rho, z)$ utilizando una malla uniforme con paso $h$ ($h=\Delta\rho=\Delta z$), denotando los puntos como $\Phi_{i,j}$ donde $i$ corresponde a la coordenada radial $\rho$ y $j$ a la coordenada axial $z$. Aplicando diferencias finitas centradas de segundo orden:
+
+\begin{equation}
+    \frac{\partial^2 \Phi}{\partial \rho^2} \approx \frac{\Phi_{i+1,j} - 2\Phi_{i,j} + \Phi_{i-1,j}}{h^2}
+\end{equation}
+\begin{equation}
+    \frac{\partial \Phi}{\partial \rho} \approx \frac{\Phi_{i+1,j} - \Phi_{i-1,j}}{2h}
+\end{equation}
+\begin{equation}
+    \frac{\partial^2 \Phi}{\partial z^2} \approx \frac{\Phi_{i,j+1} - 2\Phi_{i,j} + \Phi_{i,j-1}}{h^2}
+\end{equation}
+
+Sustituyendo estas aproximaciones en la ecuación (Eq. 6) y multiplicando por $h^2$, obtenemos la ecuación algebraica discretizada para un punto interior típico:
+
+\begin{equation}
+    (\Phi_{i+1,j} - 2\Phi_{i,j} + \Phi_{i-1,j}) + \frac{h}{2\rho_i}(\Phi_{i+1,j} - \Phi_{i-1,j}) + (\Phi_{i,j+1} - 2\Phi_{i,j} + \Phi_{i,j-1}) = h^2 f_{i,j}
+\end{equation}
+Sabiendo que $\rho_i = i \cdot h$:
+\begin{equation}
+    \left(1 + \frac{1}{2i}\right)\Phi_{i+1,j} + \left(1 - \frac{1}{2i}\right)\Phi_{i-1,j} + \Phi_{i,j+1} + \Phi_{i,j-1} - 4\Phi_{i,j} = h^2 f_{i,j}
+\end{equation}
+
+\subsubsection{Implementación del Método de Sobrerelajación (SOR)}
+El método SOR es un esquema iterativo utilizado para acelerar la convergencia del método de Gauss-Seidel. La actualización del potencial en la iteración $(k+1)$ se calcula como una combinación lineal entre el valor de la iteración anterior $(k)$ y el valor calculado por Gauss-Seidel ($\Phi^{GS}$):
+
+\begin{equation}
+    \Phi_{i,j}^{(k+1)} = \Phi_{i,j}^{(k)} + \alpha(\Phi_{i,j}^{GS} - \Phi_{i,j}^{(k)})
+\end{equation}
+
+Donde $\alpha$ (denotado como \texttt{ALPHA} en el código) es el parámetro de relajación. En el código proporcionado, las ecuaciones específicas utilizadas para calcular el valor intermedio de Gauss-Seidel (\texttt{nuevo}) para las distintas regiones identificadas por \texttt{FLAG} son:
+
+\begin{itemize}
+    \item \textbf{Región Interior (f=0) (FLAG 0):}
+    \begin{equation}
+        \Phi_{i,j}^{GS} = \frac{\left(1 + \frac{1}{2i}\right)\Phi_{i+1,j} + \left(1 - \frac{1}{2i}\right)\Phi_{i-1,j} + \Phi_{i,j+1} + \Phi_{i,j-1}}{4}
+    \end{equation}
+    
+    \item \textbf{Eje de Simetría ($\rho=0$) (FLAG 4):}
+    En el eje de simetría ($\rho \to 0$), el término $\frac{1}{\rho}\frac{\partial \Phi}{\partial \rho}$ se vuelve indeterminado. Aplicando la regla de L'Hôpital, se demuestra que $\lim_{\rho \to 0} \frac{1}{\rho}\frac{\partial \Phi}{\partial \rho} = \frac{\partial^2 \Phi}{\partial \rho^2}$. La ecuación (Eq. 6) se transforma en $2\frac{\partial^2 \Phi}{\partial \rho^2} + \frac{\partial^2 \Phi}{\partial z^2} = 0$. Utilizando la condición de simetría (condición de Neumann) $\partial\Phi/\partial\rho = 0$, que implica $\Phi_{2,j} = \Phi_{0,j}$ (puntos fantasma), la discretización resulta en la fórmula utilizada en el código:
+    \begin{equation}
+        \Phi_{1,j}^{GS} = \frac{4\Phi_{2,j} + \Phi_{1,j+1} + \Phi_{1,j-1}}{6}
+    \end{equation}
+    *(Nota: En C++, el índice $i=1$ corresponde al eje $\rho=0$ en esta implementación).*
+
+    \item \textbf{Regiones con Carga Superficial (Tapas del Imán) (FLAG 6 y 7):}
+    En las interfaces donde hay discontinuidad de $\mathbf{M}$ (tapas superior e inferior), el término $\nabla \cdot \mathbf{M}$ actúa como una fuente superficial efectiva. La condición de salto en la derivada normal es $\frac{\partial\Phi}{\partial z}|_{z+} - \frac{\partial\Phi}{\partial z}|_{z-} = -\sigma_m$, donde $\sigma_m = M$ en la tapa superior y $\sigma_m = -M$ en la inferior. La discretización en estas zonas incorpora este término fuente (término $M\cdot H$ en el código). Por ejemplo, para la tapa superior (donde el código usa \texttt{M*H}):
+    \begin{equation}
+        \Phi_{i,j}^{GS} = \frac{M\cdot H + \Phi_{i,j+1} + \Phi_{i,j-1}}{2}
+    \end{equation}
+    *(Nota: La ecuación exacta varía dependiendo de si es FLAG 6 o 7, y la ubicación específica respecto a la tapa, integrando cargas volúmicas o superficiales efectivas en el balance de diferencias finitas).*
+\end{itemize}
+
+Una vez que el algoritmo SOR converge y se obtiene el potencial $\Phi$, los componentes de la intensidad del campo magnético ($\mathbf{H} = -\nabla\Phi$) se calculan mediante diferencias finitas centrales:
+\begin{equation}
+    H_\rho = -\frac{\Phi_{i+1,j} - \Phi_{i-1,j}}{2h}, \quad H_z = -\frac{\Phi_{i,j+1} - \Phi_{i,j-1}}{2h}
+\end{equation}
+Finalmente, la inducción magnética $\mathbf{B}$ se calcula utilizando la relación $\mathbf{B} = \mu_0 (\mathbf{H} + \mathbf{M})$.
+
+
+
+\subsection{Implementación Inicial en Fortran}
+Iniciamos con el código original escrito en Fortran, el cual calcula el campo magnético para un imán cilíndrico hueco utilizando el método de sobrerelajación (SOR).
+
+\begin{lstlisting}[language=Fortran, caption=Código original en Fortran para el campo magnético.]
+      PROGRAM CAMPO_B
+      IMPLICIT REAL*8 (A-H,O-Z)
+
+C=============================================================
+C     CALCULO DEL CAMPO MAGNETICO PARA UN IMAN
+C     CILINDRICO HUECO
+C=============================================================
+
+      PARAMETER (IMAX=125, JMAX=125)
+      DIMENSION PHI(IMAX, JMAX)
+      INTEGER FLAG(IMAX, JMAX)
+      REAL*8 M
+      PI = 4.D0*DATAN(1.D0)
+
+      H = 1.D0
+
+C     POSICION DEL IMAN
+      I1 = 6 * 5
+      I2 = 15 * 5
+      J1 = 4 * 5
+
+C     MAGNETIZACION Y VOLUMEN
+      M = 1000.D0
+      V = 10.D0
+
+      ALPHA = -1.D0 + 4.D0 /
+     & (2.D0 + DSQRT(4.D0 - (DCOS(PI/IMAX) +
+     & DCOS(PI/JMAX))**2))
+
+C=============================================================
+C     DEFINICION DE FLAG
+C=============================================================
+      DO I = 2, IMAX-1
+      DO J = 2, JMAX-1
+         FLAG(I,J) = 0
+      END DO
+      END DO
+
+      DO I = 1, IMAX
+         FLAG(I,1) = 1
+         FLAG(I,JMAX) = 2
+      END DO
+
+      DO J = 2, JMAX-1
+         FLAG(IMAX,J) = 3
+         FLAG(1,J) = 4
+      END DO
+
+      DO J = 2, J1-1
+         FLAG(I1,J) = 5
+         FLAG(I2,J) = 5
+      END DO
+
+      DO I = I1+1, I2-1
+         FLAG(I,J1) = 6
+      END DO
+
+      FLAG(I1,J1) = 7
+      FLAG(I2,J1) = 7
+
+C=============================================================
+C     INICIALIZACION DE PHI
+C=============================================================
+      DO I = 1, IMAX
+      DO J = 1, JMAX
+         PHI(I,J) = 1.D0
+      END DO
+      END DO
+
+      DO I = 1, IMAX
+         PHI(I,1) = 0.D0
+         PHI(I,JMAX) = V*M/(4.D0*PI*(I*H)**3)
+      END DO
+
+      DO J = 1, JMAX
+         PHI(IMAX,J) = V*M/(4.D0*PI*(IMAX*H)**3)
+      END DO
+
+C=============================================================
+C     SOLUCION POR EL METODO DE SOBRERELAJACION
+C=============================================================
+      DO ICOUNT = 1, 200
+      DO I = 1, IMAX-1
+      DO J = 1, JMAX-1
+
+         IF (FLAG(I,J) .EQ. 0) THEN
+            A = 1.D0 + 1.D0/2.D0/FLOAT(I)
+            B = 1.D0 - 1.D0/2.D0/FLOAT(I)
+            NUEVO = (A*PHI(I+1,J) + B*PHI(I-1,J)
+     &              + PHI(I,J+1) + PHI(I,J-1)) / 4.D0
+
+         ELSE IF (FLAG(I,J).EQ.1 .OR.
+     &            FLAG(I,J).EQ.2 .OR.
+     &            FLAG(I,J).EQ.3) THEN
+            NUEVO = PHI(I,J)
+
+         ELSE IF (FLAG(I,J).EQ.4) THEN
+            NUEVO = (4.D0*PHI(2,J) + PHI(1,J+1)
+     &               + PHI(1,J-1)) / 6.D0
+
+         ELSE IF (FLAG(I,J).EQ.5) THEN
+            NUEVO = (PHI(I+1,J) + PHI(I-1,J)) / 2.D0
+
+         ELSE IF (FLAG(I,J).EQ.6) THEN
+            NUEVO = (M*H + PHI(I,J+1)
+     &               + PHI(I,J-1)) / 2.D0
+
+         ELSE IF (FLAG(I,J).EQ.7) THEN
+            NUEVO = (M*H + PHI(I,J+1) + PHI(I,J-1)
+     &               + PHI(I+1,J) + PHI(I-1,J)) / 4.D0
+
+         ELSE
+            STOP 'EL PUNTO DE LA REGION NO ESTA INDEXADO!'
+         ENDIF
+
+         PHI(I,J) = NUEVO + ALPHA*(NUEVO - PHI(I,J))
+
+      END DO
+      END DO
+      END DO
+
+C=============================================================
+C     SALIDAS
+C=============================================================
+      OPEN(10, FILE='POT-MAG')
+      DO I = 1, IMAX
+      DO J = 1, JMAX
+         WRITE(10,*) I, J, PHI(I,J)
+      END DO
+         WRITE(10,'()')
+      END DO
+      CLOSE(10)
+
+      OPEN(10, FILE='CAMPO-H')
+      DO I = 2, IMAX-1, 5
+      DO J = 2, JMAX-1, 5
+         WRITE(10,*) I, J,
+     &      (PHI(I+1,J)-PHI(I-1,J))/H/2.D0,
+     &      (PHI(I,J+1)-PHI(I,J-1))/H/2.D0
+      END DO
+         WRITE(10,'()')
+      END DO
+      CLOSE(10)
+
+      OPEN(11, FILE='CAMPO-B')
+      DO I = 2, IMAX-1, 5
+      DO J = 2, JMAX-1, 5
+         AA = 0.D0
+         IF (I.GE.I1 .AND. I.LE.I2 .AND. J.LE.J1) AA = M
+         WRITE(11,*) I, J,
+     &      -(PHI(I+1,J)-PHI(I-1,J))/H/2.D0,
+     &      AA - (PHI(I,J+1)-PHI(I,J-1))/H/2.D0
+      END DO
+         WRITE(11,'()')
+      END DO
+      CLOSE(11)
+      END
+\end{lstlisting}
+
+La salida de este código genera tres documentos de texto sin formato (\texttt{POT-MAG}, \texttt{CAMPO-H} y \texttt{CAMPO-B}). Para visualizarlos, se implementaron los siguientes tres scripts de Python:
+
+\begin{lstlisting}[language=Python, caption=Scripts de Python para graficar las salidas de Fortran.]
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- Script para CAMPO-B ---
+data = np.loadtxt("CAMPO-B")
+x, y, Bx, By = data[:,0], data[:,1], data[:,2], data[:,3]
+plt.figure(figsize=(8,8))
+plt.quiver(x, y, Bx, By)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Campo Magnético B")
+plt.savefig("img_CAMPO-B.png", dpi=300, bbox_inches="tight")
+plt.close()
+
+# --- Script para CAMPO-H ---
+data = np.loadtxt("CAMPO-H")
+x, y, Hx, Hy = data[:,0], data[:,1], data[:,2], data[:,3]
+plt.figure(figsize=(8,8))
+plt.quiver(x, y, Hx, Hy)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Campo Magnético H")
+plt.savefig("img_CAMPO-H.png", dpi=300, bbox_inches="tight")
+plt.close()
+
+# --- Script para POT-MAG ---
+data = np.loadtxt("POT-MAG")
+x, y, phi = data[:,0], data[:,1], data[:,2]
+plt.figure()
+contour = plt.tricontourf(x, y, phi, levels=50)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Potencial Magnético")
+plt.colorbar(contour)
+plt.savefig("img_POT-MAG.png", dpi=300, bbox_inches="tight")
+plt.close()
+\end{lstlisting}
+
+A continuación, se presentan las figuras generadas por la implementación base:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/img_POT-MAG.png}
+    \caption{Potencial Magnético Escalar evaluado con el código base en Fortran.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/img_CAMPO-H.png}
+    \caption{Distribución vectorial del Campo Magnético $\mathbf{H}$.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/img_CAMPO-B.png}
+    \caption{Distribución vectorial de la Inducción Magnética $\mathbf{B}$.}
+\end{figure}
+
+\subsection{Traducción a C++ y Exploración de Métodos Numéricos}
+Para realizar un análisis comparativo y preparar el terreno hacia una futura paralelización, se trasladó el código de Fortran a C++ y se implementaron tres métodos iterativos distintos para la solución del sistema: Sobrerelajación Sucesiva (SOR), Gauss-Seidel y Jacobi.
+
+El siguiente código muestra la implementación utilizando el método \textbf{SOR}:
+
+\begin{lstlisting}[language=C++, caption=Traducción a C++ utilizando el método de Sobrerelajación (SOR).]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cerr << "Uso: ./Iman_SOR <iteraciones> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int max_iters = stoi(argv[1]);
+    string suffix = argv[2];
+
+    const int IMAX = 125;
+    const int JMAX = 125;
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H, ALPHA;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;
+    I2 = 15 * 5;
+    J1 = 4 * 5;
+    M = 1000.0;
+    V = 10.0;
+    ALPHA = -1.0 + 4.0 / (2.0 + sqrt(4.0 - pow(cos(PI / IMAX) + cos(PI / JMAX), 2)));
+
+    // DEFINICION DE FLAG
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACION DE PHI
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCION POR METODO DE SOBRERELAJACION
+    for (int icount = 0; icount < max_iters; ++icount) {
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                double nuevo = 0.0;
+
+                if (FLAG[i][j] == 0) {
+                    double A = 1.0 + 1.0 / (2.0 * (double)i);
+                    double B = 1.0 - 1.0 / (2.0 * (double)i);
+                    nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                }
+                else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+
+                PHI[i][j] = nuevo + ALPHA * (nuevo - PHI[i][j]);
+            }
+        }
+    }
+
+    // SALIDA POTENCIAL (POT-MAG)
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    // CAMPO H (CAMPO-H)
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    // CAMPO B (CAMPO-B)
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+
+            outB << i << " " << j << " "
+                 << -(PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+De igual manera, se estructuró la versión para \textbf{Gauss-Seidel}, donde la asignación de la variable es directa:
+
+\begin{lstlisting}[language=C++, caption=Implementación en C++ utilizando Gauss-Seidel.]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cerr << "Uso: ./Iman_GS <iteraciones> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int max_iters = stoi(argv[1]);
+    string suffix = argv[2];
+
+    const int IMAX = 125;
+    const int JMAX = 125;
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;
+    I2 = 15 * 5;
+    J1 = 4 * 5;
+    M = 1000.0;
+    V = 10.0;
+
+    // DEFINICION DE FLAG (Identico a SOR)
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACION DE PHI
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCION POR METODO DE GAUSS-SEIDEL
+    for (int icount = 0; icount < max_iters; ++icount) {
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                double nuevo = 0.0;
+
+                if (FLAG[i][j] == 0) {
+                    double A = 1.0 + 1.0 / (2.0 * (double)i);
+                    double B = 1.0 - 1.0 / (2.0 * (double)i);
+                    nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                }
+                else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+
+                PHI[i][j] = nuevo; // En Gauss-Seidel la asignacion es directa
+            }
+        }
+    }
+
+    // SALIDAS IGUALES A SOR ...
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+
+            outB << i << " " << j << " "
+                 << -(PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Benchmark de Convergencia Serial}
+Dada la naturaleza de los métodos numéricos evaluados, se implementó el siguiente script de Bash para calcular los tiempos de ejecución de manera serial, observando particularmente a cuántas iteraciones llegan a estabilizarse los tres métodos implementados.
+
+\begin{lstlisting}[language=bash, caption=Script en Bash para el benchmark serial.]
+#!/bin/bash
+
+# Arreglo de iteraciones (4 etapas clave de convergencia)
+ITERACIONES=(200 2000 10000 30000)
+LOG_FILE="Tiempos_Ejecucion.txt"
+
+# 1. Crear directorios para los resultados
+echo "Creando directorios..."
+mkdir -p Resultados_SOR
+mkdir -p Resultados_GS
+mkdir -p Resultados_Jacobi
+
+# Formato limpio para el archivo de texto
+echo "Reporte de Tiempos de Ejecucion - Benchmark Magnetico" > $LOG_FILE
+echo "====================================================" >> $LOG_FILE
+
+# 2. Compilar los archivos C++ con banderas de optimizacion maxima
+echo "Compilando codigos (-O3)..."
+g++ -O3 Iman_SOR.cpp -o exec_SOR
+g++ -O3 Iman_GS.cpp -o exec_GS
+g++ -O3 Iman_Jacobi.cpp -o exec_Jacobi
+
+if [ $? -ne 0 ]; then
+    echo "Error en la compilacion. Verifica tus archivos C++."
+    exit 1
+fi
+
+# Configurar el formato del comando 'time' de Bash (solo segundos)
+TIMEFORMAT="%R segundos"
+
+# 3. Ejecutar benchmark
+echo "Iniciando benchmark..."
+
+for iter in "${ITERACIONES[@]}"; do
+    echo "----------------------------------------"
+    echo "Ejecutando para $iter iteraciones..."
+    
+    echo "" >> $LOG_FILE
+    echo "--- $iter Iteraciones ---" >> $LOG_FILE
+    
+    # Ejecutar SOR
+    echo "-> Ejecutando SOR..."
+    echo -n "SOR          : " >> $LOG_FILE
+    { time ./exec_SOR $iter "SOR_${iter}" ; } 2>> $LOG_FILE
+    mv *_SOR_${iter}.dat Resultados_SOR/
+    
+    # Ejecutar Gauss-Seidel
+    echo "-> Ejecutando Gauss-Seidel..."
+    echo -n "Gauss-Seidel : " >> $LOG_FILE
+    { time ./exec_GS $iter "GS_${iter}" ; } 2>> $LOG_FILE
+    mv *_GS_${iter}.dat Resultados_GS/
+    
+    # Ejecutar Jacobi
+    echo "-> Ejecutando Jacobi..."
+    echo -n "Jacobi       : " >> $LOG_FILE
+    { time ./exec_Jacobi $iter "Jacobi_${iter}" ; } 2>> $LOG_FILE
+    mv *_Jacobi_${iter}.dat Resultados_Jacobi/
+done
+
+echo "----------------------------------------"
+echo "Benchmark completado. Revisa el archivo $LOG_FILE."
+
+# Limpiar binarios
+rm exec_SOR exec_GS exec_Jacobi
+\end{lstlisting}
+
+\subsection{Análisis Visual de Resultados}
+Finalmente, para procesar la vasta cantidad de datos arrojada por el benchmark, se elaboró un script en Python que grafica comparativamente las tres magnitudes para cada conjunto de iteraciones evaluadas.
+
+\begin{lstlisting}[language=Python, caption=Script de Python para graficar comparativamente los resultados del benchmark.]
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# Parametros del benchmark
+iteraciones = [200, 2000, 10000, 30000]
+metodos = [
+    ("SOR", "Resultados_SOR"), 
+    ("GS", "Resultados_GS"), 
+    ("Jacobi", "Resultados_Jacobi")
+]
+
+# Definicion de las magnitudes a graficar con sus titulos formales
+magnitudes = [
+    ("POT-MAG", r"Potencial Magnético Escalar $\Phi$"),
+    ("CAMPO-H", r"Campo Magnético $\mathbf{H}$"),
+    ("CAMPO-B", r"Inducción Magnética $\mathbf{B}$")
+]
+
+print("Generando 12 graficas comparativas independientes...")
+
+for it in iteraciones:
+    for mag_archivo, mag_titulo in magnitudes:
+        
+        # Crear una figura horizontal (1 fila, 3 columnas)
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 5))
+        fig.suptitle(f"{mag_titulo} - {it} Iteraciones", fontsize=18, fontweight='bold', y=1.05)
+
+        for col, (nombre_metodo, carpeta) in enumerate(metodos):
+            archivo = f"{carpeta}/{mag_archivo}_{nombre_metodo}_{it}.dat"
+            ax = axes[col]
+            
+            if os.path.exists(archivo):
+                data = np.loadtxt(archivo)
+                
+                # Graficar Mapa de Calor si es el Potencial Magnetico
+                if mag_archivo == "POT-MAG":
+                    cf = ax.tricontourf(data[:, 0], data[:, 1], data[:, 2], levels=50, cmap='magma')
+                    if col == 2: # Barra de color solo al final
+                        cbar = fig.colorbar(cf, ax=ax, fraction=0.046, pad=0.04)
+                        cbar.set_label(r"$\Phi$", rotation=0, labelpad=15)
+                
+                # Graficar Vectores si son los campos H o B
+                else:
+                    color_vec = 'teal' if mag_archivo == "CAMPO-H" else 'darkred'
+                    ax.quiver(data[:, 0], data[:, 1], data[:, 2], data[:, 3], 
+                              color=color_vec, pivot='middle', scale_units='xy')
+
+                # Configuracion estetica de cada subgrafico
+                ax.set_title(f"Método: {nombre_metodo}", fontsize=14)
+                ax.set_aspect('equal')
+                ax.set_xlabel("Eje X")
+                if col == 0:
+                    ax.set_ylabel("Eje Y")
+            else:
+                ax.set_title(f"Archivo no encontrado:\n{nombre_metodo}", fontsize=10, color='red')
+                ax.axis('off')
+
+        plt.tight_layout()
+        
+        # Guardar archivo con nombre descriptivo (ej. CAMPO-B_10000_iter.png)
+        nombre_salida = f"{mag_archivo}_{it}_iter.png"
+        plt.savefig(nombre_salida, dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        print(f" -> Creado: {nombre_salida}")
+
+print("Proceso completado exitosamente.")
+\end{lstlisting}
+
+A continuación, se exponen las gráficas comparativas generadas tras el procesamiento del script anterior. Éstas reflejan la evolución de las magnitudes a lo largo de las distintas iteraciones para cada uno de los métodos probados.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_200_iter.png}
+    \caption{Comparación del Potencial Magnético para 200 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_200_iter.png}
+    \caption{Comparación del Campo Magnético $\mathbf{H}$ para 200 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_200_iter.png}
+    \caption{Comparación de la Inducción Magnética $\mathbf{B}$ para 200 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_2000_iter.png}
+    \caption{Comparación del Potencial Magnético para 2000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_2000_iter.png}
+    \caption{Comparación del Campo Magnético $\mathbf{H}$ para 2000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_2000_iter.png}
+    \caption{Comparación de la Inducción Magnética $\mathbf{B}$ para 2000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_10000_iter.png}
+    \caption{Comparación del Potencial Magnético para 10000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_10000_iter.png}
+    \caption{Comparación del Campo Magnético $\mathbf{H}$ para 10000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_10000_iter.png}
+    \caption{Comparación de la Inducción Magnética $\mathbf{B}$ para 10000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_30000_iter.png}
+    \caption{Comparación del Potencial Magnético para 30000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_30000_iter.png}
+    \caption{Comparación del Campo Magnético $\mathbf{H}$ para 30000 iteraciones.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_30000_iter.png}
+    \caption{Comparación de la Inducción Magnética $\mathbf{B}$ para 30000 iteraciones.}
+\end{figure}
+
+
+\subsection{Escalamiento del Tamaño de la Malla}
+De esta manera se llega a la conclusión de que, luego de 1000 iteraciones, los resultados de los tres métodos numéricos son prácticamente iguales. En ese orden de ideas, para poder visualizar de manera más detallada el comportamiento del campo y llevar los métodos numéricos a una mayor exigencia, se modificaron los códigos en C++ de tal forma que el tamaño de la malla (\texttt{IMAX}, \texttt{JMAX}) se reciba como un parámetro dinámico. 
+
+Es importante destacar que, aunque el número de puntos de la malla crezca significativamente, las proporciones físicas del imán y sus posiciones relativas en el espacio de simulación se mantuvieron constantes para preservar el sentido físico del problema.
+
+A continuación, se presentan las modificaciones realizadas en los tres métodos (Gauss-Seidel, Jacobi y SOR) para incorporar esta malla dinámica:
+
+\begin{lstlisting}[language=C++, caption=Código adaptado para malla dinámica - Método de Gauss-Seidel.]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        cerr << "Uso: ./Iman_GS <tamanio_malla> <iteraciones> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int IMAX = stoi(argv[1]);
+    int JMAX = IMAX;
+    int max_iters = stoi(argv[2]);
+    string suffix = argv[3];
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;  // 30
+    I2 = 15 * 5; // 75
+    J1 = 4 * 5;  // 20
+    M = 1000.0;
+    V = 10.0;
+
+    // DEFINICIÓN DE FLAG (Restaurada estructura original)
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACIÓN DE PHI
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCIÓN POR MÉTODO DE GAUSS-SEIDEL
+    for (int icount = 0; icount < max_iters; ++icount) {
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                double nuevo = 0.0;
+
+                if (FLAG[i][j] == 0) {
+                    double A = 1.0 + 1.0 / (2.0 * (double)i);
+                    double B = 1.0 - 1.0 / (2.0 * (double)i);
+                    nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                }
+                else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+
+                PHI[i][j] = nuevo; 
+            }
+        }
+    }
+
+    // SALIDAS (POT-MAG, CAMPO-H, CAMPO-B con i+=5 constante)
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+
+            outB << i << " " << j << " "
+                 << -(PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C++, caption=Código adaptado para malla dinámica - Método de Jacobi.]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        cerr << "Uso: ./Iman_Jacobi <tamanio_malla> <iteraciones> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int IMAX = stoi(argv[1]);
+    int JMAX = IMAX;
+    int max_iters = stoi(argv[2]);
+    string suffix = argv[3];
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<double>> PHI_OLD(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;  // 30
+    I2 = 15 * 5; // 75
+    J1 = 4 * 5;  // 20
+    M = 1000.0;
+    V = 10.0;
+
+    // DEFINICIÓN DE FLAG
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACIÓN DE PHI
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCIÓN POR MÉTODO DE JACOBI
+    for (int icount = 0; icount < max_iters; ++icount) {
+        
+        for (int i = 1; i <= IMAX; ++i) {
+            for (int j = 1; j <= JMAX; ++j) {
+                PHI_OLD[i][j] = PHI[i][j];
+            }
+        }
+
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                double nuevo = 0.0;
+
+                if (FLAG[i][j] == 0) {
+                    double A = 1.0 + 1.0 / (2.0 * (double)i);
+                    double B = 1.0 - 1.0 / (2.0 * (double)i);
+                    nuevo = (A * PHI_OLD[i + 1][j] + B * PHI_OLD[i - 1][j] + PHI_OLD[i][j + 1] + PHI_OLD[i][j - 1]) / 4.0;
+                }
+                else if (FLAG[i][j] >= 1 && FLAG[i][j] <= 3) nuevo = PHI_OLD[i][j];
+                else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI_OLD[2][j] + PHI_OLD[1][j + 1] + PHI_OLD[1][j - 1]) / 6.0;
+                else if (FLAG[i][j] == 5) nuevo = (PHI_OLD[i + 1][j] + PHI_OLD[i - 1][j]) / 2.0;
+                else if (FLAG[i][j] == 6) nuevo = (M * H + PHI_OLD[i][j + 1] + PHI_OLD[i][j - 1]) / 2.0;
+                else if (FLAG[i][j] == 7) nuevo = (M * H + PHI_OLD[i][j + 1] + PHI_OLD[i][j - 1] + PHI_OLD[i + 1][j] + PHI_OLD[i - 1][j]) / 4.0;
+
+                PHI[i][j] = nuevo;
+            }
+        }
+    }
+
+    // SALIDAS
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+
+            outB << i << " " << j << " "
+                 << -(PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C++, caption=Código adaptado para malla dinámica - Método de Sobrerelajación Sucesiva (SOR).]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        cerr << "Uso: ./Iman_SOR <tamanio_malla> <iteraciones> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int IMAX = stoi(argv[1]); // Malla dinámica del benchmark
+    int JMAX = IMAX;
+    int max_iters = stoi(argv[2]);
+    string suffix = argv[3];
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H, ALPHA;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;  // 30
+    I2 = 15 * 5; // 75
+    J1 = 4 * 5;  // 20
+    M = 1000.0;
+    V = 10.0;
+    ALPHA = -1.0 + 4.0 / (2.0 + sqrt(4.0 - pow(cos(PI / IMAX) + cos(PI / JMAX), 2)));
+
+    // DEFINICIÓN DE FLAG
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACIÓN DE PHI
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCIÓN POR MÉTODO DE SOBRERELAJACIÓN
+    for (int icount = 0; icount < max_iters; ++icount) {
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                double nuevo = 0.0;
+
+                if (FLAG[i][j] == 0) {
+                    double A = 1.0 + 1.0 / (2.0 * (double)i);
+                    double B = 1.0 - 1.0 / (2.0 * (double)i);
+                    nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                }
+                else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+
+                PHI[i][j] = nuevo + ALPHA * (nuevo - PHI[i][j]);
+            }
+        }
+    }
+
+    // SALIDAS
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+
+            outB << i << " " << j << " "
+                 << -(PHI[i + 1][j] - PHI[i - 1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j + 1] - PHI[i][j - 1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Script de Python para graficar el escalamiento de la malla.]
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# Tamaños de malla definidos en tu benchmark
+mallas = [125, 250, 500] 
+
+metodos = [
+    ("SOR", "Resultados_SOR"), 
+    ("GS", "Resultados_GS"), 
+    ("Jacobi", "Resultados_Jacobi")
+]
+
+# Magnitudes a graficar
+magnitudes = [
+    ("POT-MAG", r"Potencial Magnético Escalar $\Phi$"),
+    ("CAMPO-H", r"Campo Magnético $\mathbf{H}$"),
+    ("CAMPO-B", r"Inducción Magnética $\mathbf{B}$")
+]
+
+print("Generando gráficas para el escalamiento de malla...")
+
+for m in mallas:
+    for mag_archivo, mag_titulo in magnitudes:
+        
+        # Crear la figura (1 fila, 3 columnas)
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 5))
+        fig.suptitle(f"{mag_titulo} - Malla de {m}x{m}", fontsize=18, fontweight='bold', y=1.05)
+
+        for col, (nombre_metodo, carpeta) in enumerate(metodos):
+            # Formato de archivo: MAGNITUD_METODO_Mmalla.dat
+            archivo = f"{carpeta}/{mag_archivo}_{nombre_metodo}_M{m}.dat"
+            ax = axes[col]
+            
+            if os.path.exists(archivo):
+                try:
+                    data = np.loadtxt(archivo)
+                except Exception as e:
+                    print(f"Error leyendo {archivo}: {e}")
+                    continue
+                
+                if data.size == 0:
+                    ax.set_title("Archivo vacío", fontsize=10)
+                    ax.axis('off')
+                    continue
+
+                # 1. GRAFICAR POTENCIAL (Mapa de Calor)
+                if mag_archivo == "POT-MAG":
+                    cf = ax.tricontourf(data[:, 0], data[:, 1], data[:, 2], levels=50, cmap='magma')
+                    if col == 2: 
+                        cbar = fig.colorbar(cf, ax=ax, fraction=0.046, pad=0.04)
+                        cbar.set_label(r"$\Phi$", rotation=0, labelpad=15)
+                
+                # 2. GRAFICAR CAMPOS VECTORIALES (H y B)
+                else:
+                    color_vec = 'teal' if mag_archivo == "CAMPO-H" else 'darkred'
+                    # Usamos scale_units='xy' para que la flecha respete la escala del eje
+                    ax.quiver(data[:, 0], data[:, 1], data[:, 2], data[:, 3], 
+                              color=color_vec, pivot='middle', scale_units='xy')
+
+                # Configuración estética
+                ax.set_title(f"Método: {nombre_metodo}", fontsize=14)
+                ax.set_aspect('equal')
+                ax.set_xlabel("Eje X")
+                if col == 0:
+                    ax.set_ylabel("Eje Y")
+            else:
+                ax.set_title(f"No encontrado", fontsize=10, color='red')
+                ax.axis('off')
+
+        plt.tight_layout()
+        
+        # Nombre de salida limpio
+        nombre_salida = f"{mag_archivo}_M{m}.png"
+        plt.savefig(nombre_salida, dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        print(f" -> Creado: {nombre_salida}")
+
+print("Proceso completado exitosamente.")
+\end{lstlisting}
+
+Una vez procesados los datos mediante este script, a continuación se presentan de forma comparativa las visualizaciones obtenidas de los tres tamaños de malla propuestos (\texttt{125x125}, \texttt{250x250} y \texttt{500x500}), lo que permite observar la resolución y comportamiento de las magnitudes físicas al afinar el dominio de cálculo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_M125.png}
+    \caption{Comparativa del Potencial Magnético para malla de 125x125.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_M125.png}
+    \caption{Comparativa del Campo Magnético $\mathbf{H}$ para malla de 125x125.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_M125.png}
+    \caption{Comparativa de la Inducción Magnética $\mathbf{B}$ para malla de 125x125.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_M250.png}
+    \caption{Comparativa del Potencial Magnético para malla de 250x250.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_M250.png}
+    \caption{Comparativa del Campo Magnético $\mathbf{H}$ para malla de 250x250.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_M250.png}
+    \caption{Comparativa de la Inducción Magnética $\mathbf{B}$ para malla de 250x250.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/POT-MAG_M500.png}
+    \caption{Comparativa del Potencial Magnético para malla de 500x500.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-H_M500.png}
+    \caption{Comparativa del Campo Magnético $\mathbf{H}$ para malla de 500x500.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/CAMPO-B_M500.png}
+    \caption{Comparativa de la Inducción Magnética $\mathbf{B}$ para malla de 500x500.}
+\end{figure}
+
+
+\subsection{Análisis de Rendimiento Computacional y Optimización}
+Para evaluar la eficiencia y escalabilidad de los métodos numéricos (SOR, Gauss-Seidel y Jacobi), se ejecutó un benchmark intensivo en el clúster fijando el número de iteraciones en 10,000. Se midieron los tiempos de ejecución escalando el tamaño de la malla de $125 \times 125$ hasta $2000 \times 2000$ puntos, y aplicando diferentes banderas de optimización del compilador GCC (\texttt{-O0}, \texttt{-O1}, \texttt{-O2}, \texttt{-O3}).
+
+A continuación, se presentan las gráficas comparativas de rendimiento para cada nivel de optimización. Se observa de forma contundente cómo la complejidad algorítmica escala en función de los puntos de la grilla y el impacto drástico que tienen las banderas del compilador sobre el tiempo final.
+
+\subsubsection{Nivel de Optimización: Default (Sin flag)}
+En la ejecución por defecto, se observan tiempos de cálculo muy elevados para mallas grandes, acercándose a los 900 segundos para la resolución de $2000 \times 2000$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/Rendimiento_Default_Sin_Flag.png}
+    \caption{Tiempos de ejecución escalando la malla bajo la compilación estándar (Default).}
+\end{figure}
+
+\subsubsection{Nivel de Optimización: -O0}
+La bandera \texttt{-O0} anula expresamente cualquier intento del compilador por optimizar el código, priorizando un tiempo de compilación veloz. El comportamiento es casi idéntico al caso \textit{Default}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/Rendimiento_O0.png}
+    \caption{Tiempos de ejecución escalando la malla con la bandera -O0.}
+\end{figure}
+
+\subsubsection{Nivel de Optimización: -O1}
+Al aplicar \texttt{-O1}, el compilador intenta reducir el tamaño del código y el tiempo de ejecución. El salto de rendimiento es inmediato: el tiempo de la malla máxima ($2000 \times 2000$) se reduce de $\sim$900 segundos a poco más de 220 segundos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/Rendimiento_O1.png}
+    \caption{Tiempos de ejecución escalando la malla con la bandera -O1.}
+\end{figure}
+
+\subsubsection{Nivel de Optimización: -O2}
+Con \texttt{-O2}, GCC activa la mayoría de las optimizaciones de rendimiento que no implican una compensación estricta de espacio/velocidad. En estos códigos de cálculo matricial, los resultados convergen cerca de los tiempos logrados con \texttt{-O1}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/Rendimiento_O2.png}
+    \caption{Tiempos de ejecución escalando la malla con la bandera -O2.}
+\end{figure}
+
+\subsubsection{Nivel de Optimización: -O3}
+Alcanzando el nivel máximo de optimización (\texttt{-O3}), se habilita la vectorización agresiva y el desenrollado de bucles (\textit{loop unrolling}). Jacobi y Gauss-Seidel mantienen el liderazgo en velocidad al operar con arreglos más simples, completando 10,000 iteraciones en mallas de 4 millones de puntos en menos de 150 segundos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/Rendimiento_O3.png}
+    \caption{Tiempos de ejecución escalando la malla con optimización extrema (-O3).}
+\end{figure}
+
+
+\subsection{Paralelización Orientada a Clúster con OpenMP}
+Una vez evaluado el rendimiento serial y el impacto de la optimización del compilador, el siguiente paso natural para explotar la capacidad de un clúster de cómputo es la paralelización de memoria compartida mediante OpenMP. 
+
+Para estudiar la escalabilidad del problema, se diseñó un entorno de pruebas capaz de variar dinámicamente el tamaño de la malla matricial y el número de hilos de procesamiento (12, 24, 48 y 64 hilos).
+
+\subsubsection{Automatización del Benchmark Multihilo}
+El control de la simulación se orquestó mediante un script de Bash. Este script compila los códigos con la bandera \texttt{-fopenmp} y \texttt{-O3}, y ejecuta una matriz de pruebas que cruza los diferentes tamaños del dominio con la cantidad de hilos disponibles. Para evitar un colapso en el sistema de almacenamiento del clúster debido a la masiva generación de datos de las mallas pesadas, el script guarda únicamente los resultados físicos (archivos \texttt{.dat}) de la ejecución con 64 hilos, limitándose a registrar los tiempos de procesamiento en las demás iteraciones.
+
+\begin{lstlisting}[language=bash, caption=Script de automatización para el Benchmark en el Clúster.]
+#!/bin/bash
+
+MALLAS=(125 250 500 1000 1500 2000)
+HILOS=(12 24 48 64)
+ITERACIONES=10000
+LOG_FILE="Tiempos_Ejecucion_OpenMP.txt"
+
+mkdir -p Resultados_SOR Resultados_GS Resultados_Jacobi
+
+echo "REPORTE DE TIEMPOS OPENMP - Samuel" > $LOG_FILE
+echo "==================================" >> $LOG_FILE
+
+# Compilación crítica con -fopenmp
+echo "Compilando códigos con OpenMP y O3..."
+g++ -O3 -fopenmp Iman_SOR.cpp -o exec_SOR
+g++ -O3 -fopenmp Iman_GS.cpp -o exec_GS
+g++ -O3 -fopenmp Iman_Jacobi.cpp -o exec_Jacobi
+
+TIMEFORMAT="%R"
+
+for malla in "${MALLAS[@]}"; do
+    echo "----------------------------------------"
+    echo "Procesando Malla $malla x $malla..."
+    echo "" >> $LOG_FILE
+    echo "--- Malla: $malla x $malla ---" >> $LOG_FILE
+
+    for h in "${HILOS[@]}"; do
+        echo " -> Ejecutando con $h hilos..."
+        echo -n "Threads $h | " >> $LOG_FILE
+        
+        # Ejecución y medición
+        echo -n "SOR: " >> $LOG_FILE
+        T_SOR=$({ time ./exec_SOR $malla $ITERACIONES $h "SOR_M${malla}" ; } 2>&1)
+        echo -n "$T_SOR s | " >> $LOG_FILE
+        
+        echo -n "GS: " >> $LOG_FILE
+        T_GS=$({ time ./exec_GS $malla $ITERACIONES $h "GS_M${malla}" ; } 2>&1)
+        echo -n "$T_GS s | " >> $LOG_FILE
+        
+        echo -n "Jacobi: " >> $LOG_FILE
+        T_JAC=$({ time ./exec_Jacobi $malla $ITERACIONES $h "Jacobi_M${malla}" ; } 2>&1)
+        echo "$T_JAC s" >> $LOG_FILE
+
+        # Gestión de archivos: Solo guardamos los de 64 hilos
+        if [ "$h" -eq 64 ]; then
+            mv POT-MAG_SOR_M${malla}.dat Resultados_SOR/ 2>/dev/null
+            mv CAMPO-H_SOR_M${malla}.dat Resultados_SOR/ 2>/dev/null
+            mv CAMPO-B_SOR_M${malla}.dat Resultados_SOR/ 2>/dev/null
+            
+            mv POT-MAG_GS_M${malla}.dat Resultados_GS/ 2>/dev/null
+            mv CAMPO-H_GS_M${malla}.dat Resultados_GS/ 2>/dev/null
+            mv CAMPO-B_GS_M${malla}.dat Resultados_GS/ 2>/dev/null
+            
+            mv POT-MAG_Jacobi_M${malla}.dat Resultados_Jacobi/ 2>/dev/null
+            mv CAMPO-H_Jacobi_M${malla}.dat Resultados_Jacobi/ 2>/dev/null
+            mv CAMPO-B_Jacobi_M${malla}.dat Resultados_Jacobi/ 2>/dev/null
+        else
+            rm *.dat 2>/dev/null
+        fi
+    done
+done
+
+rm exec_SOR exec_GS exec_Jacobi
+echo "Benchmark finalizado. Revisa $LOG_FILE."
+\end{lstlisting}
+
+\subsubsection{Estrategia de Paralelización: Ordenamiento Rojo-Negro (Red-Black)}
+El método de Jacobi posee una estructura matemática intrínsecamente paralela, ya que el cálculo de la iteración actual ($k$) depende exclusivamente de los datos de la iteración pasada ($k-1$), los cuales se leen de una matriz estática \texttt{PHI\_OLD}. Por ello, su paralelización se logra simplemente añadiendo la directiva \texttt{\#pragma omp parallel for collapse(2)}.
+
+Sin embargo, los métodos de Gauss-Seidel y SOR actualizan la matriz \textit{in-place}. Esto genera una \textbf{dependencia de datos} (Data Dependency) severa: el cálculo de la celda $(i, j)$ requiere los valores previamente actualizados de las celdas vecinas $(i-1, j)$ y $(i, j-1)$ en la misma iteración. Si múltiples hilos intentan actualizar la malla simultáneamente bajo un esquema secuencial, ocurrirán condiciones de carrera (\textit{Race Conditions}), corrompiendo la solución.
+
+Para solucionar este impedimento, se implementó el \textbf{Ordenamiento Rojo-Negro} (\textit{Red-Black Ordering}). Este enfoque desacopla las dependencias tratando la malla bidimensional como un tablero de ajedrez:
+\begin{itemize}
+    \item \textbf{Paso Rojo:} Se actualizan todas las celdas cuya suma de índices $(i+j)$ es par. Debido a la geometría de diferencias finitas centrales, las celdas vecinas de un nodo rojo son siempre nodos negros. Por lo tanto, todos los nodos rojos pueden actualizarse simultáneamente en paralelo sin colisiones.
+    \item \textbf{Paso Negro:} Se actualizan todas las celdas cuya suma de índices $(i+j)$ es impar. Al estar ya calculados los nodos rojos vecinos en la fase anterior, la actualización negra procede en paralelo de manera segura.
+\end{itemize}
+
+El número de hilos se inyecta dinámicamente en tiempo de ejecución utilizando la función \texttt{omp\_set\_num\_threads(n\_threads)}. 
+
+A continuación se presentan las implementaciones en C++ integrando estas directivas de OpenMP.
+
+\begin{lstlisting}[language=C++, caption=Implementación de Jacobi paralelizado mediante OpenMP.]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <omp.h> // Librería de OpenMP
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 5) {
+        cerr << "Uso: ./Iman_Jacobi <tamanio_malla> <iteraciones> <hilos> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int IMAX = stoi(argv[1]);
+    int JMAX = IMAX;
+    int max_iters = stoi(argv[2]);
+    int n_threads = stoi(argv[3]);
+    string suffix = argv[4];
+
+    omp_set_num_threads(n_threads);
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<double>> PHI_OLD(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;  // 30
+    I2 = 15 * 5; // 75
+    J1 = 4 * 5;  // 20
+    M = 1000.0;
+    V = 10.0;
+
+    // DEFINICIÓN DE FLAG PARALELIZADA
+    #pragma omp parallel for collapse(2)
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACIÓN DE PHI PARALELIZADA
+    #pragma omp parallel for collapse(2)
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCIÓN POR MÉTODO DE JACOBI
+    for (int icount = 0; icount < max_iters; ++icount) {
+        
+        #pragma omp parallel for collapse(2)
+        for (int i = 1; i <= IMAX; ++i) {
+            for (int j = 1; j <= JMAX; ++j) {
+                PHI_OLD[i][j] = PHI[i][j];
+            }
+        }
+
+        #pragma omp parallel for collapse(2) schedule(static)
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                double nuevo = 0.0;
+
+                if (FLAG[i][j] == 0) {
+                    double A = 1.0 + 1.0 / (2.0 * (double)i);
+                    double B = 1.0 - 1.0 / (2.0 * (double)i);
+                    nuevo = (A * PHI_OLD[i + 1][j] + B * PHI_OLD[i - 1][j] + PHI_OLD[i][j + 1] + PHI_OLD[i][j - 1]) / 4.0;
+                }
+                else if (FLAG[i][j] >= 1 && FLAG[i][j] <= 3) nuevo = PHI_OLD[i][j];
+                else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI_OLD[2][j] + PHI_OLD[1][j + 1] + PHI_OLD[1][j - 1]) / 6.0;
+                else if (FLAG[i][j] == 5) nuevo = (PHI_OLD[i + 1][j] + PHI_OLD[i - 1][j]) / 2.0;
+                else if (FLAG[i][j] == 6) nuevo = (M * H + PHI_OLD[i][j + 1] + PHI_OLD[i][j - 1]) / 2.0;
+                else if (FLAG[i][j] == 7) nuevo = (M * H + PHI_OLD[i][j + 1] + PHI_OLD[i][j - 1] + PHI_OLD[i + 1][j] + PHI_OLD[i - 1][j]) / 4.0;
+
+                PHI[i][j] = nuevo;
+            }
+        }
+    }
+
+    // SALIDAS
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i+1][j] - PHI[i-1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j+1] - PHI[i][j-1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+            outB << i << " " << j << " "
+                 << -(PHI[i+1][j] - PHI[i-1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j+1] - PHI[i][j-1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C++, caption=Implementación de Gauss-Seidel paralelizado con el esquema Red-Black.]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <omp.h> // Librería de OpenMP
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 5) {
+        cerr << "Uso: ./Iman_GS <tamanio_malla> <iteraciones> <hilos> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int IMAX = stoi(argv[1]);
+    int JMAX = IMAX;
+    int max_iters = stoi(argv[2]);
+    int n_threads = stoi(argv[3]);
+    string suffix = argv[4];
+
+    omp_set_num_threads(n_threads);
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;  // 30
+    I2 = 15 * 5; // 75
+    J1 = 4 * 5;  // 20
+    M = 1000.0;
+    V = 10.0;
+
+    // DEFINICIÓN DE FLAG
+    #pragma omp parallel for collapse(2)
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    // INICIALIZACIÓN DE PHI
+    #pragma omp parallel for collapse(2)
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCIÓN POR MÉTODO DE GAUSS-SEIDEL (Red-Black Parallel)
+    for (int icount = 0; icount < max_iters; ++icount) {
+        
+        // PASO ROJO
+        #pragma omp parallel for collapse(2) schedule(static)
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                if ((i + j) % 2 == 0) {
+                    double nuevo = 0.0;
+                    if (FLAG[i][j] == 0) {
+                        double A = 1.0 + 1.0 / (2.0 * (double)i);
+                        double B = 1.0 - 1.0 / (2.0 * (double)i);
+                        nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                    }
+                    else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                    else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                    else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                    else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                    else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+                    PHI[i][j] = nuevo; 
+                }
+            }
+        }
+
+        // PASO NEGRO
+        #pragma omp parallel for collapse(2) schedule(static)
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                if ((i + j) % 2 != 0) {
+                    double nuevo = 0.0;
+                    if (FLAG[i][j] == 0) {
+                        double A = 1.0 + 1.0 / (2.0 * (double)i);
+                        double B = 1.0 - 1.0 / (2.0 * (double)i);
+                        nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                    }
+                    else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                    else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                    else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                    else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                    else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+                    PHI[i][j] = nuevo; 
+                }
+            }
+        }
+    }
+
+    // SALIDAS
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i+1][j] - PHI[i-1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j+1] - PHI[i][j-1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+            outB << i << " " << j << " "
+                 << -(PHI[i+1][j] - PHI[i-1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j+1] - PHI[i][j-1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C++, caption=Implementación de SOR paralelizado con el esquema Red-Black.]
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <omp.h> // Añadido para OpenMP
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc != 5) {
+        cerr << "Uso: ./Iman_SOR <tamanio_malla> <iteraciones> <hilos> <sufijo_archivo>" << endl;
+        return 1;
+    }
+    
+    int IMAX = stoi(argv[1]);
+    int JMAX = IMAX;
+    int max_iters = stoi(argv[2]);
+    int n_threads = stoi(argv[3]); 
+    string suffix = argv[4];
+
+    omp_set_num_threads(n_threads); 
+
+    vector<vector<double>> PHI(IMAX + 1, vector<double>(JMAX + 1));
+    vector<vector<int>> FLAG(IMAX + 1, vector<int>(JMAX + 1));
+
+    double M, PI, V, H, ALPHA;
+    int I1, I2, J1;
+
+    PI = 4.0 * atan(1.0);
+    H = 1.0;
+    I1 = 6 * 5;  // 30
+    I2 = 15 * 5; // 75
+    J1 = 4 * 5;  // 20
+    M = 1000.0;
+    V = 10.0;
+    ALPHA = -1.0 + 4.0 / (2.0 + sqrt(4.0 - pow(cos(PI / IMAX) + cos(PI / JMAX), 2)));
+
+    #pragma omp parallel for collapse(2)
+    for (int i = 2; i < IMAX; ++i) {
+        for (int j = 2; j < JMAX; ++j) {
+            FLAG[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][1] = 1;
+    for (int i = 1; i <= IMAX; ++i) FLAG[i][JMAX] = 2;
+    for (int j = 2; j < JMAX; ++j) FLAG[IMAX][j] = 3;
+    for (int j = 2; j < JMAX; ++j) FLAG[1][j] = 4;
+    for (int j = 2; j < J1; ++j) {
+        FLAG[I1][j] = 5;
+        FLAG[I2][j] = 5;
+    }
+    for (int i = I1 + 1; i < I2; ++i) FLAG[i][J1] = 6;
+    FLAG[I1][J1] = 7;
+    FLAG[I2][J1] = 7;
+
+    #pragma omp parallel for collapse(2)
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            PHI[i][j] = 1.0;
+        }
+    }
+    for (int i = 1; i <= IMAX; ++i) PHI[i][1] = 0.0;
+    for (int i = 1; i <= IMAX; ++i) PHI[i][JMAX] = (V * M) / (4.0 * PI * pow(i * H, 3));
+    for (int j = 1; j <= JMAX; ++j) PHI[IMAX][j] = (V * M) / (4.0 * PI * pow(IMAX * H, 3));
+
+    // SOLUCIÓN POR MÉTODO DE SOBRERELAJACIÓN (Red-Black)
+    for (int icount = 0; icount < max_iters; ++icount) {
+        
+        // PASO ROJO
+        #pragma omp parallel for collapse(2) schedule(static)
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                if ((i + j) % 2 == 0) {
+                    double nuevo = 0.0;
+                    if (FLAG[i][j] == 0) {
+                        double A = 1.0 + 1.0 / (2.0 * (double)i);
+                        double B = 1.0 - 1.0 / (2.0 * (double)i);
+                        nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                    }
+                    else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                    else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                    else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                    else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                    else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+                    PHI[i][j] = nuevo + ALPHA * (nuevo - PHI[i][j]);
+                }
+            }
+        }
+        
+        // PASO NEGRO
+        #pragma omp parallel for collapse(2) schedule(static)
+        for (int i = 1; i < IMAX; ++i) {
+            for (int j = 1; j < JMAX; ++j) {
+                if ((i + j) % 2 != 0) {
+                    double nuevo = 0.0;
+                    if (FLAG[i][j] == 0) {
+                        double A = 1.0 + 1.0 / (2.0 * (double)i);
+                        double B = 1.0 - 1.0 / (2.0 * (double)i);
+                        nuevo = (A * PHI[i + 1][j] + B * PHI[i - 1][j] + PHI[i][j + 1] + PHI[i][j - 1]) / 4.0;
+                    }
+                    else if (FLAG[i][j] == 1 || FLAG[i][j] == 2 || FLAG[i][j] == 3) nuevo = PHI[i][j];
+                    else if (FLAG[i][j] == 4) nuevo = (4.0 * PHI[2][j] + PHI[1][j + 1] + PHI[1][j - 1]) / 6.0;
+                    else if (FLAG[i][j] == 5) nuevo = (PHI[i + 1][j] + PHI[i - 1][j]) / 2.0;
+                    else if (FLAG[i][j] == 6) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1]) / 2.0;
+                    else if (FLAG[i][j] == 7) nuevo = (M * H + PHI[i][j + 1] + PHI[i][j - 1] + PHI[i + 1][j] + PHI[i - 1][j]) / 4.0;
+                    PHI[i][j] = nuevo + ALPHA * (nuevo - PHI[i][j]);
+                }
+            }
+        }
+    }
+
+    // SALIDAS
+    ofstream outPot("POT-MAG_" + suffix + ".dat");
+    for (int i = 1; i <= IMAX; ++i) {
+        for (int j = 1; j <= JMAX; ++j) {
+            outPot << i << " " << j << " " << PHI[i][j] << endl;
+        }
+        outPot << endl;
+    }
+    outPot.close();
+
+    ofstream outH("CAMPO-H_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            outH << i << " " << j << " " 
+                 << (PHI[i+1][j] - PHI[i-1][j]) / (H * 2.0) << " "
+                 << (PHI[i][j+1] - PHI[i][j-1]) / (H * 2.0) << endl;
+        }
+        outH << endl;
+    }
+    outH.close();
+
+    ofstream outB("CAMPO-B_" + suffix + ".dat");
+    for (int i = 2; i < IMAX; i += 5) {
+        for (int j = 2; j < JMAX; j += 5) {
+            double AA = 0.0;
+            if (i >= I1 && i <= I2 && j <= J1) AA = M;
+            outB << i << " " << j << " "
+                 << -(PHI[i+1][j] - PHI[i-1][j]) / (H * 2.0) << " "
+                 << AA - (PHI[i][j+1] - PHI[i][j-1]) / (H * 2.0) << endl;
+        }
+        outB << endl;
+    }
+    outB.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+
+\section{Evaluación de Escalabilidad en Clúster (OpenMP)}
+
+Una vez verificada la correcta implementación de las directivas OpenMP y el ordenamiento Rojo-Negro, el código fue sometido a pruebas de estrés en un clúster computacional. El objetivo de este experimento fue medir el \textit{speedup} (aceleración) real del programa al variar tanto el volumen de datos (tamaño de la malla) como los recursos de procesamiento (12, 24, 48 y 64 hilos concurrentes). Todas las pruebas se ejecutaron fijando el nivel máximo de optimización del compilador (\texttt{-O3}) y un límite de 10,000 iteraciones para garantizar una comparativa justa.
+
+A continuación, se presentan las gráficas generadas a partir del benchmark, las cuales revelan fenómenos fundamentales de la computación de alto rendimiento.
+
+\subsection{Análisis de Resultados: Sobrecarga vs. Aceleración}
+
+Al observar las métricas, se identifican tres comportamientos distintos condicionados por la relación entre el tamaño del problema y los recursos asignados:
+
+\begin{enumerate}
+    \item \textbf{Mallas Pequeñas (125x125 y 250x250):} En estos escenarios, incrementar el número de hilos resulta en un empeoramiento del tiempo de ejecución (escalabilidad negativa). Esto ocurre debido a que la carga computacional por hilo es demasiado baja; en consecuencia, el \textit{overhead} (costo administrativo del sistema operativo para crear, sincronizar y destruir los hilos, además de gestionar las barreras implícitas de OpenMP) supera ampliamente el beneficio de dividir el trabajo.
+    
+    \item \textbf{Mallas Medianas (500x500 y 1000x1000):} El sistema comienza a mostrar beneficios de la paralelización, encontrando un "punto dulce" de rendimiento alrededor de los 24 a 48 hilos. A partir de los 64 hilos, la curva vuelve a ascender levemente, indicando que el paralelismo se ha saturado para este tamaño de datos.
+    
+    \item \textbf{Mallas Masivas (1500x1500 y 2000x2000):} Aquí es donde el clúster justifica su arquitectura. Tomando como referencia la malla de 2000x2000, la versión serial altamente optimizada (-O3) tardaba aproximadamente 142 segundos en completarse. Al inyectar 48 hilos, el tiempo colapsa drásticamente a $\sim$11.1 segundos, logrando un \textit{speedup} cercano a \textbf{12.7x}. 
+\end{enumerate}
+
+Es de vital importancia destacar el fenómeno de "cuello de botella de memoria" (\textit{Memory Wall}) observado en la ejecución masiva con 64 hilos. Para las mallas más grandes, pasar de 48 a 64 hilos genera un ligero retroceso en el rendimiento (subiendo de 11.1s a 11.9s en Gauss-Seidel). Esto demuestra que los núcleos de procesamiento están exigiendo datos a una velocidad superior a la que el bus de memoria (RAM) puede entregarlos, saturando el ancho de banda del sistema en lugar de la capacidad de cómputo.
+
+\subsection{Gráficas de Rendimiento Multihilo}
+
+A continuación, se adjuntan las comparativas visuales del escalamiento. Se observa que Gauss-Seidel y Jacobi presentan rendimientos muy similares a gran escala, compitiendo estrechamente debido a la uniformidad de la grilla y la optimización extrema lograda con la directiva \texttt{collapse(2)}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/Rendimiento_OpenMP_M125.png}
+    \caption{Escalabilidad multihilo para la malla de 125x125. Se evidencia un aumento en el tiempo debido al overhead de sincronización.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/Rendimiento_OpenMP_M250.png}
+    \caption{Escalabilidad multihilo para la malla de 250x250. La tendencia de escalabilidad negativa se mantiene presente.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/Rendimiento_OpenMP_M500.png}
+    \caption{Escalabilidad multihilo para la malla de 500x500. El rendimiento encuentra un óptimo en 24 hilos.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/Rendimiento_OpenMP_M1000.png}
+    \caption{Escalabilidad multihilo para la malla de 1000x1000. Los beneficios del paralelismo se consolidan fuertemente en los 48 hilos.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/Rendimiento_OpenMP_M1500.png}
+    \caption{Escalabilidad multihilo para la malla de 1500x1500. Los tres métodos reducen el tiempo sustancialmente hasta los 48 hilos.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/Rendimiento_OpenMP_M2000.png}
+    \caption{Escalabilidad multihilo para la malla de 2000x2000. Se percibe la saturación del bus de memoria al intentar utilizar 64 hilos, marcando el límite físico de la arquitectura.}
+\end{figure}
+
+
+\end{document}
+
+
+
