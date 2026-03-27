@@ -1,0 +1,174 @@
+REPORT DE RENDIMIENTO Y OPTIMIZACIÓN - PROYECTO MAGNETISMO
+Samuel - Ejecución en Clúster
+Iteraciones fijas: 10000
+==========================================================
+
+##########################################################
+NIVEL DE OPTIMIZACIÓN: Default (Sin flag)
+##########################################################
+
+--- Malla: 125x125 ---
+SOR          : 3,340 segundos
+Gauss-Seidel : 2,979 segundos
+Jacobi       : 2,965 segundos
+
+--- Malla: 250x250 ---
+SOR          : 13,700 segundos
+Gauss-Seidel : 11,971 segundos
+Jacobi       : 12,954 segundos
+
+--- Malla: 500x500 ---
+SOR          : 56,793 segundos
+Gauss-Seidel : 50,101 segundos
+Jacobi       : 51,883 segundos
+
+--- Malla: 1000x1000 ---
+SOR          : 229,821 segundos
+Gauss-Seidel : 202,532 segundos
+Jacobi       : 215,203 segundos
+
+--- Malla: 1500x1500 ---
+SOR          : 504,178 segundos
+Gauss-Seidel : 469,291 segundos
+Jacobi       : 453,586 segundos
+
+--- Malla: 2000x2000 ---
+SOR          : 888,883 segundos
+Gauss-Seidel : 819,974 segundos
+Jacobi       : 830,007 segundos
+
+##########################################################
+NIVEL DE OPTIMIZACIÓN: -O0
+##########################################################
+
+--- Malla: 125x125 ---
+SOR          : 3,325 segundos
+Gauss-Seidel : 2,977 segundos
+Jacobi       : 2,961 segundos
+
+--- Malla: 250x250 ---
+SOR          : 14,796 segundos
+Gauss-Seidel : 12,263 segundos
+Jacobi       : 13,170 segundos
+
+--- Malla: 500x500 ---
+SOR          : 55,448 segundos
+Gauss-Seidel : 51,711 segundos
+Jacobi       : 50,924 segundos
+
+--- Malla: 1000x1000 ---
+SOR          : 221,407 segundos
+Gauss-Seidel : 196,500 segundos
+Jacobi       : 198,837 segundos
+
+--- Malla: 1500x1500 ---
+SOR          : 498,987 segundos
+Gauss-Seidel : 458,653 segundos
+Jacobi       : 465,601 segundos
+
+--- Malla: 2000x2000 ---
+SOR          : 905,794 segundos
+Gauss-Seidel : 821,567 segundos
+Jacobi       : 821,004 segundos
+
+##########################################################
+NIVEL DE OPTIMIZACIÓN: -O1
+##########################################################
+
+--- Malla: 125x125 ---
+SOR          : 0,853 segundos
+Gauss-Seidel : 0,528 segundos
+Jacobi       : 0,526 segundos
+
+--- Malla: 250x250 ---
+SOR          : 3,479 segundos
+Gauss-Seidel : 2,134 segundos
+Jacobi       : 2,144 segundos
+
+--- Malla: 500x500 ---
+SOR          : 14,053 segundos
+Gauss-Seidel : 8,641 segundos
+Jacobi       : 8,656 segundos
+
+--- Malla: 1000x1000 ---
+SOR          : 56,666 segundos
+Gauss-Seidel : 34,694 segundos
+Jacobi       : 34,690 segundos
+
+--- Malla: 1500x1500 ---
+SOR          : 128,650 segundos
+Gauss-Seidel : 78,990 segundos
+Jacobi       : 79,075 segundos
+
+--- Malla: 2000x2000 ---
+SOR          : 227,974 segundos
+Gauss-Seidel : 140,530 segundos
+Jacobi       : 140,564 segundos
+
+##########################################################
+NIVEL DE OPTIMIZACIÓN: -O2
+##########################################################
+
+--- Malla: 125x125 ---
+SOR          : 0,856 segundos
+Gauss-Seidel : 0,530 segundos
+Jacobi       : 0,531 segundos
+
+--- Malla: 250x250 ---
+SOR          : 3,519 segundos
+Gauss-Seidel : 2,177 segundos
+Jacobi       : 2,176 segundos
+
+--- Malla: 500x500 ---
+SOR          : 14,183 segundos
+Gauss-Seidel : 8,753 segundos
+Jacobi       : 8,816 segundos
+
+--- Malla: 1000x1000 ---
+SOR          : 57,157 segundos
+Gauss-Seidel : 35,425 segundos
+Jacobi       : 35,248 segundos
+
+--- Malla: 1500x1500 ---
+SOR          : 129,387 segundos
+Gauss-Seidel : 80,365 segundos
+Jacobi       : 79,699 segundos
+
+--- Malla: 2000x2000 ---
+SOR          : 230,444 segundos
+Gauss-Seidel : 142,961 segundos
+Jacobi       : 142,416 segundos
+
+##########################################################
+NIVEL DE OPTIMIZACIÓN: -O3
+##########################################################
+
+--- Malla: 125x125 ---
+SOR          : 0,850 segundos
+Gauss-Seidel : 0,532 segundos
+Jacobi       : 0,532 segundos
+
+--- Malla: 250x250 ---
+SOR          : 3,499 segundos
+Gauss-Seidel : 2,167 segundos
+Jacobi       : 2,178 segundos
+
+--- Malla: 500x500 ---
+SOR          : 14,454 segundos
+Gauss-Seidel : 8,822 segundos
+Jacobi       : 8,752 segundos
+
+--- Malla: 1000x1000 ---
+SOR          : 57,136 segundos
+Gauss-Seidel : 35,489 segundos
+Jacobi       : 35,249 segundos
+
+--- Malla: 1500x1500 ---
+SOR          : 129,330 segundos
+Gauss-Seidel : 79,889 segundos
+Jacobi       : 79,840 segundos
+
+--- Malla: 2000x2000 ---
+SOR          : 230,158 segundos
+Gauss-Seidel : 142,114 segundos
+Jacobi       : 142,626 segundos

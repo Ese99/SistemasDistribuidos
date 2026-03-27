@@ -1,0 +1,17 @@
+Reporte de Tiempos
+==================
+
+--- Malla: 125 x 125 ---
+SOR          : 0,180 segundos
+Gauss-Seidel : 0,116 segundos
+Jacobi       : 0,116 segundos
+
+--- Malla: 250 x 250 ---
+SOR          : 0,730 segundos
+Gauss-Seidel : 0,461 segundos
+Jacobi       : 0,462 segundos
+
+--- Malla: 500 x 500 ---
+SOR          : 2,956 segundos
+Gauss-Seidel : 1,849 segundos
+Jacobi       : 1,848 segundos

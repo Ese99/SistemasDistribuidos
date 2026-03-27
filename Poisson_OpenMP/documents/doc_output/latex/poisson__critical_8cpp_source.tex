@@ -1,0 +1,37 @@
+\doxysection{poisson\+\_\+critical.\+cpp}
+\hypertarget{poisson__critical_8cpp_source}{}\label{poisson__critical_8cpp_source}\mbox{\hyperlink{poisson__critical_8cpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00001}00001\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{utils_8h}{utils.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00002}00002\ \textcolor{preprocessor}{\#include\ <omp.h>}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00003}00003\ }
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00004}\mbox{\hyperlink{poisson__critical_8cpp_ad115fe0ff7ce5f8dbd0d285ccbf80f31}{00004}}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{poisson__critical_8cpp_ad115fe0ff7ce5f8dbd0d285ccbf80f31}{solve\_poisson}}(std::vector<std::vector<double>>\&\ T,\ \textcolor{keyword}{const}\ std::vector<std::vector<double>>\&\ source,\ \textcolor{keywordtype}{int}\ M,\ \textcolor{keywordtype}{int}\ N,\ \textcolor{keywordtype}{double}\ h,\ \textcolor{keywordtype}{double}\ k,\ \textcolor{keywordtype}{int}\ ex)\ \{}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00005}00005\ \ \ \ \ \textcolor{keywordtype}{double}\ delta\ =\ 1.0;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00006}00006\ \ \ \ \ \textcolor{keywordtype}{int}\ iterations\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00007}00007\ \ \ \ \ \textcolor{keywordflow}{while}\ (delta\ >\ \mbox{\hyperlink{utils_8h_a826e1b6d8f7888032cded335c8f5a8b2}{TOL}})\ \{}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00008}00008\ \ \ \ \ \ \ \ \ delta\ =\ 0.0;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00009}00009\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#pragma\ omp\ parallel\ for\ collapse(2)\ reduction(max:delta)}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00010}00010\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 1;\ i\ <\ M;\ ++i)\ \{}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00011}00011\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 1;\ j\ <\ N;\ ++j)\ \{}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00012}00012\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ T\_new\ =\ (((T[i+1][j]\ +\ T[i-\/1][j])\ *\ k*k)\ +\ ((T[i][j+1]\ +\ T[i][j-\/1])\ *\ h*h)\ -\/\ (source[i][j]\ *\ h*h\ *\ k*k))\ /\ (2.0\ *\ (h*h\ +\ k*k));}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00013}00013\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ delta\ =\ std::max(delta,\ std::abs(T\_new\ -\/\ T[i][j]));}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00014}00014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T[i][j]\ =\ T\_new;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00015}00015\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00016}00016\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00017}00017\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#pragma\ omp\ critical}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00018}00018\ \ \ \ \ \ \ \ \ \{\ iterations++;\ \}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00019}00019\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00020}00020\ \ \ \ \ \textcolor{keywordflow}{if}(M\ <=\ 1000)\ std::cout\ <<\ \textcolor{stringliteral}{"{}Ej\ "{}}\ <<\ ex\ <<\ \textcolor{stringliteral}{"{}\ Iteraciones\ (Critical):\ "{}}\ <<\ iterations\ <<\ std::endl;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00021}00021\ \}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00023}\mbox{\hyperlink{poisson__critical_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{00023}}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{poisson__critical_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}}()\ \{}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{int}\ M\ =\ \mbox{\hyperlink{utils_8h_ac7be9ce03bb764dffe072ed5af62b92e}{VALOR\_M}},\ N\ =\ \mbox{\hyperlink{utils_8h_a0dcb2c0ef08f96be7263e18ff8753b80}{VALOR\_N}};}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00025}00025\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ex\ =\ 1;\ ex\ <=\ 4;\ ++ex)\ \{}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00026}00026\ \ \ \ \ \ \ \ \ std::vector<std::vector<double>>\ T,\ source;\ \textcolor{keywordtype}{double}\ h,\ k;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00027}00027\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a757befc984a4a8f8def938c4fe7c490e}{initialize\_grid}}(ex,\ M,\ N,\ T,\ h,\ k);\ \mbox{\hyperlink{utils_8h_a79d9220f935fca031b5fdc2cde56196a}{get\_source\_matrix}}(ex,\ M,\ N,\ source,\ h,\ k);}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00028}00028\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{poisson__critical_8cpp_ad115fe0ff7ce5f8dbd0d285ccbf80f31}{solve\_poisson}}(T,\ source,\ M,\ N,\ h,\ k,\ ex);}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00029}00029\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a0311806c38a7ae586545dc411ccd7bcd}{export\_to\_file}}(ex,\ T,\ h,\ k,\ M,\ N,\ \textcolor{stringliteral}{"{}critical"{}});}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00030}00030\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00031}00031\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{poisson__critical_8cpp_source_l00032}00032\ \}}
+
+\end{DoxyCode}

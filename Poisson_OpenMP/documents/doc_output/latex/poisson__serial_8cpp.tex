@@ -1,0 +1,87 @@
+\doxysection{poisson\+\_\+serial.\+cpp File Reference}
+\hypertarget{poisson__serial_8cpp}{}\label{poisson__serial_8cpp}\index{poisson\_serial.cpp@{poisson\_serial.cpp}}
+{\ttfamily \#include "{}utils.\+h"{}}\newline
+Include dependency graph for poisson\+\_\+serial.\+cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{poisson__serial_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{poisson__serial_8cpp_abb5f3f1601514bd726ddfcac4674a19c}{solve\+\_\+poisson}} (std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&T, const std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&source, int M, int N, double h, double k)
+\item 
+int \mbox{\hyperlink{poisson__serial_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{poisson__serial_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{poisson__serial_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4} 
+\index{poisson\_serial.cpp@{poisson\_serial.cpp}!main@{main}}
+\index{main@{main}!poisson\_serial.cpp@{poisson\_serial.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{poisson__serial_8cpp_source_l00017}{17}} of file \mbox{\hyperlink{poisson__serial_8cpp_source}{poisson\+\_\+serial.\+cpp}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{int}\ M\ =\ \mbox{\hyperlink{utils_8h_ac7be9ce03bb764dffe072ed5af62b92e}{VALOR\_M}},\ N\ =\ \mbox{\hyperlink{utils_8h_a0dcb2c0ef08f96be7263e18ff8753b80}{VALOR\_N}};}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ex\ =\ 1;\ ex\ <=\ 4;\ ++ex)\ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ std::vector<std::vector<double>>\ T,\ source;}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ h,\ k;}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a757befc984a4a8f8def938c4fe7c490e}{initialize\_grid}}(ex,\ M,\ N,\ T,\ h,\ k);}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a79d9220f935fca031b5fdc2cde56196a}{get\_source\_matrix}}(ex,\ M,\ N,\ source,\ h,\ k);}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{poisson__serial_8cpp_abb5f3f1601514bd726ddfcac4674a19c}{solve\_poisson}}(T,\ source,\ M,\ N,\ h,\ k);}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a0311806c38a7ae586545dc411ccd7bcd}{export\_to\_file}}(ex,\ T,\ h,\ k,\ M,\ N,\ \textcolor{stringliteral}{"{}serial"{}});}
+\DoxyCodeLine{00026\ \ \ \ \ \}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00028\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{poisson__serial_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4_cgraph}
+\end{center}
+\end{figure}
+\Hypertarget{poisson__serial_8cpp_abb5f3f1601514bd726ddfcac4674a19c}\label{poisson__serial_8cpp_abb5f3f1601514bd726ddfcac4674a19c} 
+\index{poisson\_serial.cpp@{poisson\_serial.cpp}!solve\_poisson@{solve\_poisson}}
+\index{solve\_poisson@{solve\_poisson}!poisson\_serial.cpp@{poisson\_serial.cpp}}
+\doxysubsubsection{\texorpdfstring{solve\_poisson()}{solve\_poisson()}}
+{\footnotesize\ttfamily void solve\+\_\+poisson (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{T,  }\item[{const std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{source,  }\item[{int}]{M,  }\item[{int}]{N,  }\item[{double}]{h,  }\item[{double}]{k }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{poisson__serial_8cpp_source_l00003}{3}} of file \mbox{\hyperlink{poisson__serial_8cpp_source}{poisson\+\_\+serial.\+cpp}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00003\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00004\ \ \ \ \ \textcolor{keywordtype}{double}\ delta\ =\ 1.0;}
+\DoxyCodeLine{00005\ \ \ \ \ \textcolor{keywordflow}{while}\ (delta\ >\ \mbox{\hyperlink{utils_8h_a826e1b6d8f7888032cded335c8f5a8b2}{TOL}})\ \{}
+\DoxyCodeLine{00006\ \ \ \ \ \ \ \ \ delta\ =\ 0.0;}
+\DoxyCodeLine{00007\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 1;\ i\ <\ M;\ ++i)\ \{}
+\DoxyCodeLine{00008\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 1;\ j\ <\ N;\ ++j)\ \{}
+\DoxyCodeLine{00009\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ T\_new\ =\ (((T[i+1][j]\ +\ T[i-\/1][j])\ *\ k*k)\ +\ ((T[i][j+1]\ +\ T[i][j-\/1])\ *\ h*h)\ -\/\ (source[i][j]\ *\ h*h\ *\ k*k))\ /\ (2.0\ *\ (h*h\ +\ k*k));}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ delta\ =\ std::max(delta,\ std::abs(T\_new\ -\/\ T[i][j]));}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T[i][j]\ =\ T\_new;}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00014\ \ \ \ \ \}}
+\DoxyCodeLine{00015\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=243pt]{poisson__serial_8cpp_abb5f3f1601514bd726ddfcac4674a19c_icgraph}
+\end{center}
+\end{figure}

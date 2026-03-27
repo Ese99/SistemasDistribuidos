@@ -1,0 +1,107 @@
+\begin{theindex}
+
+  \item {archivos}
+    \subitem {graficas}, \hyperpage{6}
+
+  \indexspace
+
+  \item {benchmark.sh}, \hyperpage{9}
+
+  \indexspace
+
+  \item {exact\_sol}
+    \subitem {utils.h}, \hyperpage{25}
+  \item {exist\_ok}
+    \subitem {graficas}, \hyperpage{6}
+  \item {export\_to\_file}
+    \subitem {utils.h}, \hyperpage{25}
+
+  \indexspace
+
+  \item {get\_domain}
+    \subitem {utils.h}, \hyperpage{26}
+  \item {get\_source\_matrix}
+    \subitem {utils.h}, \hyperpage{26}
+  \item {graficas}, \hyperpage{5}
+    \subitem {archivos}, \hyperpage{6}
+    \subitem {exist\_ok}, \hyperpage{6}
+    \subitem {plot\_comparative\_3d}, \hyperpage{5}
+    \subitem {salida}, \hyperpage{7}
+    \subitem {sol\_analitica}, \hyperpage{6}
+  \item {graficas.py}, \hyperpage{10}
+
+  \indexspace
+
+  \item {initialize\_grid}
+    \subitem {utils.h}, \hyperpage{27}
+
+  \indexspace
+
+  \item {main}
+    \subitem {poisson\_atomic.cpp}, \hyperpage{11}
+    \subitem {poisson\_critical.cpp}, \hyperpage{14}
+    \subitem {poisson\_parallel\_for.cpp}, \hyperpage{16}
+    \subitem {poisson\_serial.cpp}, \hyperpage{19}
+    \subitem {poisson\_task.cpp}, \hyperpage{21}
+
+  \indexspace
+
+  \item {plot\_comparative\_3d}
+    \subitem {graficas}, \hyperpage{5}
+  \item {poisson\_atomic.cpp}, \hyperpage{11}
+    \subitem {main}, \hyperpage{11}
+    \subitem {solve\_poisson}, \hyperpage{12}
+  \item {poisson\_critical.cpp}, \hyperpage{13}
+    \subitem {main}, \hyperpage{14}
+    \subitem {solve\_poisson}, \hyperpage{14}
+  \item {poisson\_parallel\_for.cpp}, \hyperpage{16}
+    \subitem {main}, \hyperpage{16}
+    \subitem {solve\_poisson}, \hyperpage{17}
+  \item {poisson\_serial.cpp}, \hyperpage{18}
+    \subitem {main}, \hyperpage{19}
+    \subitem {solve\_poisson}, \hyperpage{19}
+  \item {poisson\_task.cpp}, \hyperpage{20}
+    \subitem {main}, \hyperpage{21}
+    \subitem {solve\_poisson}, \hyperpage{21}
+
+  \indexspace
+
+  \item {salida}
+    \subitem {graficas}, \hyperpage{7}
+  \item {sol\_analitica}
+    \subitem {graficas}, \hyperpage{6}
+  \item {solve\_poisson}
+    \subitem {poisson\_atomic.cpp}, \hyperpage{12}
+    \subitem {poisson\_critical.cpp}, \hyperpage{14}
+    \subitem {poisson\_parallel\_for.cpp}, \hyperpage{17}
+    \subitem {poisson\_serial.cpp}, \hyperpage{19}
+    \subitem {poisson\_task.cpp}, \hyperpage{21}
+  \item {source\_func}
+    \subitem {utils.h}, \hyperpage{28}
+
+  \indexspace
+
+  \item {TOL}
+    \subitem {utils.h}, \hyperpage{29}
+
+  \indexspace
+
+  \item {utils.h}, \hyperpage{23}
+    \subitem {exact\_sol}, \hyperpage{25}
+    \subitem {export\_to\_file}, \hyperpage{25}
+    \subitem {get\_domain}, \hyperpage{26}
+    \subitem {get\_source\_matrix}, \hyperpage{26}
+    \subitem {initialize\_grid}, \hyperpage{27}
+    \subitem {source\_func}, \hyperpage{28}
+    \subitem {TOL}, \hyperpage{29}
+    \subitem {VALOR\_M}, \hyperpage{24}
+    \subitem {VALOR\_N}, \hyperpage{24}
+
+  \indexspace
+
+  \item {VALOR\_M}
+    \subitem {utils.h}, \hyperpage{24}
+  \item {VALOR\_N}
+    \subitem {utils.h}, \hyperpage{24}
+
+\end{theindex}

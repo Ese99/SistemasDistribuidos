@@ -1,0 +1,63 @@
+\doxysection{graficas.\+py}
+\hypertarget{graficas_8py_source}{}\label{graficas_8py_source}\index{graficas.py@{graficas.py}}
+\mbox{\hyperlink{graficas_8py}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00001}\mbox{\hyperlink{namespacegraficas}{00001}}\ \textcolor{keyword}{import}\ os}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00002}00002\ \textcolor{keyword}{import}\ numpy\ \textcolor{keyword}{as}\ np}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00003}00003\ \textcolor{keyword}{import}\ matplotlib.pyplot\ \textcolor{keyword}{as}\ plt}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00004}00004\ \textcolor{keyword}{import}\ glob}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00005}00005\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00006}00006\ \textcolor{comment}{\#\ Diccionario\ de\ soluciones\ analíticas\ según\ el\ ejemplo}}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00007}\mbox{\hyperlink{namespacegraficas_ad30cff64195ecb48de023a92b4401cc9}{00007}}\ \textcolor{keyword}{def\ }\mbox{\hyperlink{namespacegraficas_ad30cff64195ecb48de023a92b4401cc9}{sol\_analitica}}(ex,\ x,\ y):}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00008}00008\ \ \ \ \ \textcolor{keywordflow}{if}\ ex\ ==\ 1:\ \textcolor{keywordflow}{return}\ np.exp(x\ *\ y)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00009}00009\ \ \ \ \ \textcolor{keywordflow}{if}\ ex\ ==\ 2:\ \textcolor{keywordflow}{return}\ np.log(x**2\ +\ y**2)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00010}00010\ \ \ \ \ \textcolor{keywordflow}{if}\ ex\ ==\ 3:\ \textcolor{keywordflow}{return}\ (x\ -\/\ y)**2}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00011}00011\ \ \ \ \ \textcolor{keywordflow}{if}\ ex\ ==\ 4:\ \textcolor{keywordflow}{return}\ x\ *\ y\ *\ np.log(x\ *\ y)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00012}00012\ \ \ \ \ \textcolor{keywordflow}{return}\ x*0}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00013}00013\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00014}\mbox{\hyperlink{namespacegraficas_ac9bbc0cf55ab7aa03f6c60bdeb376038}{00014}}\ \textcolor{keyword}{def\ }\mbox{\hyperlink{namespacegraficas_ac9bbc0cf55ab7aa03f6c60bdeb376038}{plot\_comparative\_3d}}(filename,\ output\_name):}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00015}00015\ \ \ \ \ \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00016}00016\ \ \ \ \ \ \ \ \ data\ =\ np.loadtxt(filename)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00017}00017\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ data.size\ ==\ 0:\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00018}00018\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00019}00019\ \ \ \ \ \ \ \ \ \textcolor{comment}{\#\ Identificar\ qué\ ejemplo\ es\ leyendo\ el\ nombre\ del\ archivo\ ("{}\_Ej1.dat"{},\ etc.)}}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00020}00020\ \ \ \ \ \ \ \ \ ex\_num\ =\ 1}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00021}00021\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ i\ \textcolor{keywordflow}{in}\ range(1,\ 5):}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00022}00022\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ f\textcolor{stringliteral}{"{}Ej\{i\}"{}}\ \textcolor{keywordflow}{in}\ filename:\ ex\_num\ =\ i}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00023}00023\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00024}00024\ \ \ \ \ \ \ \ \ x\ =\ data[:,\ 0];\ y\ =\ data[:,\ 1];\ z\ =\ data[:,\ 2]}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00025}00025\ \ \ \ \ \ \ \ \ M\ =\ len(np.unique(x));\ N\ =\ len(np.unique(y))}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00026}00026\ \ \ \ \ \ \ \ \ X\ =\ x.reshape((M,\ N));\ Y\ =\ y.reshape((M,\ N));\ Z\_num\ =\ z.reshape((M,\ N))}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00027}00027\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00028}00028\ \ \ \ \ \ \ \ \ \textcolor{comment}{\#\ Generar\ superficie\ analítica\ exacta}}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00029}00029\ \ \ \ \ \ \ \ \ Z\_ana\ =\ \mbox{\hyperlink{namespacegraficas_ad30cff64195ecb48de023a92b4401cc9}{sol\_analitica}}(ex\_num,\ X,\ Y)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00031}00031\ \ \ \ \ \ \ \ \ fig\ =\ plt.figure(figsize=(10,\ 7))}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00032}00032\ \ \ \ \ \ \ \ \ ax\ =\ fig.add\_subplot(111,\ projection=\textcolor{stringliteral}{'3d'})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00033}00033\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00034}00034\ \ \ \ \ \ \ \ \ \textcolor{comment}{\#\ Malla\ negra\ para\ la\ solución\ analítica}}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00035}00035\ \ \ \ \ \ \ \ \ ax.plot\_wireframe(X,\ Y,\ Z\_ana,\ color=\textcolor{stringliteral}{'black'},\ label=\textcolor{stringliteral}{'Solución\ analítica'},\ linewidth=1)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00036}00036\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00037}00037\ \ \ \ \ \ \ \ \ \textcolor{comment}{\#\ Puntos/Superficie\ roja\ para\ la\ solución\ numérica}}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00038}00038\ \ \ \ \ \ \ \ \ ax.scatter(X,\ Y,\ Z\_num,\ color=\textcolor{stringliteral}{'red'},\ s=5,\ label=\textcolor{stringliteral}{'Solución\ numérica'},\ alpha=0.8)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00040}00040\ \ \ \ \ \ \ \ \ ax.set\_xlabel(\textcolor{stringliteral}{'X'})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00041}00041\ \ \ \ \ \ \ \ \ ax.set\_ylabel(\textcolor{stringliteral}{'Y'})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00042}00042\ \ \ \ \ \ \ \ \ ax.set\_zlabel(\textcolor{stringliteral}{'Potencial'})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00043}00043\ \ \ \ \ \ \ \ \ ax.set\_title(f\textcolor{stringliteral}{'Ecuación\ de\ Poisson\ -\/\ Ejemplo\ \{ex\_num\}'})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00044}00044\ \ \ \ \ \ \ \ \ ax.legend()}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00046}00046\ \ \ \ \ \ \ \ \ plt.savefig(output\_name,\ dpi=300)}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00047}00047\ \ \ \ \ \ \ \ \ plt.close()}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00048}00048\ \ \ \ \ \ \ \ \ print(f\textcolor{stringliteral}{"{}Gráfica\ guardada:\ \{output\_name\}"{}})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00049}00049\ \ \ \ \ \textcolor{keywordflow}{except}\ Exception\ \textcolor{keyword}{as}\ e:}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00050}00050\ \ \ \ \ \ \ \ \ print(f\textcolor{stringliteral}{"{}Error\ procesando\ \{filename\}:\ \{e\}"{}})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00052}00052\ \textcolor{keywordflow}{if}\ \_\_name\_\_\ ==\ \textcolor{stringliteral}{'\_\_main\_\_'}:}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00053}\mbox{\hyperlink{namespacegraficas_ab5772f1e1ef4f15379ce03b3142fe882}{00053}}\ \ \ \ \ os.makedirs(\textcolor{stringliteral}{'imag'},\ exist\_ok=\textcolor{keyword}{True})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00054}\mbox{\hyperlink{namespacegraficas_a2deae7b93be6772909ba7cad33399312}{00054}}\ \ \ \ \ archivos\ =\ glob.glob(\textcolor{stringliteral}{'data/*.dat'})}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00055}00055\ \ \ \ \ \textcolor{keywordflow}{for}\ arc\ \textcolor{keywordflow}{in}\ archivos:}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00056}\mbox{\hyperlink{namespacegraficas_a1b41af62473486d8ccd2c258f0cf711a}{00056}}\ \ \ \ \ \ \ \ \ salida\ =\ os.path.join(\textcolor{stringliteral}{'imag'},\ os.path.basename(arc).replace(\textcolor{stringliteral}{'.dat'},\ \textcolor{stringliteral}{'.png'}))}
+\DoxyCodeLine{\Hypertarget{graficas_8py_source_l00057}00057\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacegraficas_ac9bbc0cf55ab7aa03f6c60bdeb376038}{plot\_comparative\_3d}}(arc,\ salida)}
+
+\end{DoxyCode}

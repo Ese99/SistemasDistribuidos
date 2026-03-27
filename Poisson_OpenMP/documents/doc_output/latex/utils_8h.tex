@@ -1,0 +1,303 @@
+\doxysection{utils.\+h File Reference}
+\hypertarget{utils_8h}{}\label{utils_8h}\index{utils.h@{utils.h}}
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+Include dependency graph for utils.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{utils_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{utils_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{utils_8h_ac7be9ce03bb764dffe072ed5af62b92e}{VALOR\+\_\+M}}~50
+\item 
+\#define \mbox{\hyperlink{utils_8h_a0dcb2c0ef08f96be7263e18ff8753b80}{VALOR\+\_\+N}}~50
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{utils_8h_a293f61617f09ee319fd33ccdbe769d2d}{get\+\_\+domain}} (int ex, double \&x\+\_\+0, double \&x\+\_\+f, double \&y\+\_\+0, double \&y\+\_\+f)
+\item 
+double \mbox{\hyperlink{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a}{exact\+\_\+sol}} (int ex, double x, double y)
+\item 
+double \mbox{\hyperlink{utils_8h_abe13b9e5f59f07f116219b159534a53a}{source\+\_\+func}} (int ex, double x, double y)
+\item 
+void \mbox{\hyperlink{utils_8h_a757befc984a4a8f8def938c4fe7c490e}{initialize\+\_\+grid}} (int ex, int M, int N, std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&T, double \&h, double \&k)
+\item 
+void \mbox{\hyperlink{utils_8h_a79d9220f935fca031b5fdc2cde56196a}{get\+\_\+source\+\_\+matrix}} (int ex, int M, int N, std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&source, double h, double k)
+\item 
+void \mbox{\hyperlink{utils_8h_a0311806c38a7ae586545dc411ccd7bcd}{export\+\_\+to\+\_\+file}} (int ex, const std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&T, double h, double k, int M, int N, const std\+::string \&method\+\_\+name)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const double \mbox{\hyperlink{utils_8h_a826e1b6d8f7888032cded335c8f5a8b2}{TOL}} = 1e-\/7
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{utils_8h_ac7be9ce03bb764dffe072ed5af62b92e}\label{utils_8h_ac7be9ce03bb764dffe072ed5af62b92e} 
+\index{utils.h@{utils.h}!VALOR\_M@{VALOR\_M}}
+\index{VALOR\_M@{VALOR\_M}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{VALOR\_M}{VALOR\_M}}
+{\footnotesize\ttfamily \#define VALOR\+\_\+M~50}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00013}{13}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+\Hypertarget{utils_8h_a0dcb2c0ef08f96be7263e18ff8753b80}\label{utils_8h_a0dcb2c0ef08f96be7263e18ff8753b80} 
+\index{utils.h@{utils.h}!VALOR\_N@{VALOR\_N}}
+\index{VALOR\_N@{VALOR\_N}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{VALOR\_N}{VALOR\_N}}
+{\footnotesize\ttfamily \#define VALOR\+\_\+N~50}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00016}{16}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a}\label{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a} 
+\index{utils.h@{utils.h}!exact\_sol@{exact\_sol}}
+\index{exact\_sol@{exact\_sol}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{exact\_sol()}{exact\_sol()}}
+{\footnotesize\ttfamily double exact\+\_\+sol (\begin{DoxyParamCaption}\item[{int}]{ex,  }\item[{double}]{x,  }\item[{double}]{y }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00032}{32}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 1)\ \textcolor{keywordflow}{return}\ std::exp(x\ *\ y);}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 2)\ \textcolor{keywordflow}{return}\ std::log(x\ *\ x\ +\ y\ *\ y);}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 3)\ \textcolor{keywordflow}{return}\ (x\ -\/\ y)\ *\ (x\ -\/\ y);}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 4)\ \textcolor{keywordflow}{return}\ x\ *\ y\ *\ std::log(x\ *\ y);}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ 0.0;}
+\DoxyCodeLine{00038\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=339pt]{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a_icgraph}
+\end{center}
+\end{figure}
+\Hypertarget{utils_8h_a0311806c38a7ae586545dc411ccd7bcd}\label{utils_8h_a0311806c38a7ae586545dc411ccd7bcd} 
+\index{utils.h@{utils.h}!export\_to\_file@{export\_to\_file}}
+\index{export\_to\_file@{export\_to\_file}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{export\_to\_file()}{export\_to\_file()}}
+{\footnotesize\ttfamily void export\+\_\+to\+\_\+file (\begin{DoxyParamCaption}\item[{int}]{ex,  }\item[{const std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{T,  }\item[{double}]{h,  }\item[{double}]{k,  }\item[{int}]{M,  }\item[{int}]{N,  }\item[{const std\+::string \&}]{method\+\_\+name }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00079}{79}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ PROTECCIÓN\ PARA\ EL\ CLÚSTER:\ Si\ la\ malla\ es\ muy\ grande\ (>\ 1000),\ no\ guardamos\ el\ .dat\ }}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{comment}{//\ porque\ generaría\ gigabytes\ de\ datos\ y\ colapsaría\ el\ almacenamiento\ del\ clúster.}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{if}\ (M\ >\ 1000)\ \textcolor{keywordflow}{return};\ }
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{double}\ x\_0\ =\ 0.0,\ x\_f\ =\ 0.0,\ y\_0\ =\ 0.0,\ y\_f\ =\ 0.0;\ \textcolor{comment}{//\ Inicializadas}}
+\DoxyCodeLine{00085\ \ \ \ \ \mbox{\hyperlink{utils_8h_a293f61617f09ee319fd33ccdbe769d2d}{get\_domain}}(ex,\ x\_0,\ x\_f,\ y\_0,\ y\_f);}
+\DoxyCodeLine{00086\ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ std::string\ filename\ =\ \textcolor{stringliteral}{"{}data/solucion\_"{}}\ +\ method\_name\ +\ \textcolor{stringliteral}{"{}\_Ej"{}}\ +\ std::to\_string(ex)\ +\ \textcolor{stringliteral}{"{}.dat"{}};}
+\DoxyCodeLine{00088\ \ \ \ \ std::ofstream\ file(filename);}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{if}\ (!file.is\_open())\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00090\ \ \ \ \ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <=\ M;\ ++i)\ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <=\ N;\ ++j)\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ file\ <<\ (x\_0\ +\ i\ *\ h)\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)t"{}}\ <<\ (y\_0\ +\ j\ *\ k)\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)t"{}}\ <<\ T[i][j]\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \ \ file.close();}
+\DoxyCodeLine{00097\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=273pt]{utils_8h_a0311806c38a7ae586545dc411ccd7bcd_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=240pt]{utils_8h_a0311806c38a7ae586545dc411ccd7bcd_icgraph}
+\end{center}
+\end{figure}
+\Hypertarget{utils_8h_a293f61617f09ee319fd33ccdbe769d2d}\label{utils_8h_a293f61617f09ee319fd33ccdbe769d2d} 
+\index{utils.h@{utils.h}!get\_domain@{get\_domain}}
+\index{get\_domain@{get\_domain}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{get\_domain()}{get\_domain()}}
+{\footnotesize\ttfamily void get\+\_\+domain (\begin{DoxyParamCaption}\item[{int}]{ex,  }\item[{double \&}]{x\+\_\+0,  }\item[{double \&}]{x\+\_\+f,  }\item[{double \&}]{y\+\_\+0,  }\item[{double \&}]{y\+\_\+f }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00023}{23}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 1)\ \{\ x\_0=0.0;\ x\_f=2.0;\ y\_0=0.0;\ y\_f=1.0;\ \}}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ex\ ==\ 2)\ \{\ x\_0=1.0;\ x\_f=2.0;\ y\_0=0.0;\ y\_f=1.0;\ \}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ex\ ==\ 3)\ \{\ x\_0=1.0;\ x\_f=2.0;\ y\_0=0.0;\ y\_f=2.0;\ \}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ex\ ==\ 4)\ \{\ x\_0=1.0;\ x\_f=2.0;\ y\_0=1.0;\ y\_f=2.0;\ \}}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordflow}{else}\ \{\ x\_0=0.0;\ x\_f=1.0;\ y\_0=0.0;\ y\_f=1.0;\ \}\ \textcolor{comment}{//\ Fallback\ de\ seguridad}}
+\DoxyCodeLine{00029\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{utils_8h_a293f61617f09ee319fd33ccdbe769d2d_icgraph}
+\end{center}
+\end{figure}
+\Hypertarget{utils_8h_a79d9220f935fca031b5fdc2cde56196a}\label{utils_8h_a79d9220f935fca031b5fdc2cde56196a} 
+\index{utils.h@{utils.h}!get\_source\_matrix@{get\_source\_matrix}}
+\index{get\_source\_matrix@{get\_source\_matrix}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{get\_source\_matrix()}{get\_source\_matrix()}}
+{\footnotesize\ttfamily void get\+\_\+source\+\_\+matrix (\begin{DoxyParamCaption}\item[{int}]{ex,  }\item[{int}]{M,  }\item[{int}]{N,  }\item[{std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{source,  }\item[{double}]{h,  }\item[{double}]{k }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00068}{68}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{double}\ x\_0\ =\ 0.0,\ x\_f\ =\ 0.0,\ y\_0\ =\ 0.0,\ y\_f\ =\ 0.0;\ \textcolor{comment}{//\ Inicializadas}}
+\DoxyCodeLine{00070\ \ \ \ \ \mbox{\hyperlink{utils_8h_a293f61617f09ee319fd33ccdbe769d2d}{get\_domain}}(ex,\ x\_0,\ x\_f,\ y\_0,\ y\_f);}
+\DoxyCodeLine{00071\ \ \ \ \ source.assign(M\ +\ 1,\ std::vector<double>(N\ +\ 1,\ 0.0));}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <=\ M;\ ++i)\ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <=\ N;\ ++j)\ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ source[i][j]\ =\ \mbox{\hyperlink{utils_8h_abe13b9e5f59f07f116219b159534a53a}{source\_func}}(ex,\ x\_0\ +\ i\ *\ h,\ y\_0\ +\ j\ *\ k);}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=298pt]{utils_8h_a79d9220f935fca031b5fdc2cde56196a_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=264pt]{utils_8h_a79d9220f935fca031b5fdc2cde56196a_icgraph}
+\end{center}
+\end{figure}
+\Hypertarget{utils_8h_a757befc984a4a8f8def938c4fe7c490e}\label{utils_8h_a757befc984a4a8f8def938c4fe7c490e} 
+\index{utils.h@{utils.h}!initialize\_grid@{initialize\_grid}}
+\index{initialize\_grid@{initialize\_grid}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{initialize\_grid()}{initialize\_grid()}}
+{\footnotesize\ttfamily void initialize\+\_\+grid (\begin{DoxyParamCaption}\item[{int}]{ex,  }\item[{int}]{M,  }\item[{int}]{N,  }\item[{std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{T,  }\item[{double \&}]{h,  }\item[{double \&}]{k }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00049}{49}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{double}\ x\_0\ =\ 0.0,\ x\_f\ =\ 0.0,\ y\_0\ =\ 0.0,\ y\_f\ =\ 0.0;\ \textcolor{comment}{//\ Inicializadas}}
+\DoxyCodeLine{00051\ \ \ \ \ \mbox{\hyperlink{utils_8h_a293f61617f09ee319fd33ccdbe769d2d}{get\_domain}}(ex,\ x\_0,\ x\_f,\ y\_0,\ y\_f);}
+\DoxyCodeLine{00052\ \ \ \ \ h\ =\ (x\_f\ -\/\ x\_0)\ /\ M;}
+\DoxyCodeLine{00053\ \ \ \ \ k\ =\ (y\_f\ -\/\ y\_0)\ /\ N;}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ T.assign(M\ +\ 1,\ std::vector<double>(N\ +\ 1,\ 0.0));}
+\DoxyCodeLine{00056\ \ \ \ \ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ Condiciones\ de\ frontera\ exactas}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <=\ N;\ ++j)\ \{}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ T[0][j]\ =\ \mbox{\hyperlink{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a}{exact\_sol}}(ex,\ x\_0,\ y\_0\ +\ j\ *\ k);}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ T[M][j]\ =\ \mbox{\hyperlink{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a}{exact\_sol}}(ex,\ x\_f,\ y\_0\ +\ j\ *\ k);}
+\DoxyCodeLine{00061\ \ \ \ \ \}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <=\ M;\ ++i)\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ T[i][0]\ =\ \mbox{\hyperlink{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a}{exact\_sol}}(ex,\ x\_0\ +\ i\ *\ h,\ y\_0);}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ T[i][N]\ =\ \mbox{\hyperlink{utils_8h_a3f4b17f45c1d5ff49e293c832374b02a}{exact\_sol}}(ex,\ x\_0\ +\ i\ *\ h,\ y\_f);}
+\DoxyCodeLine{00065\ \ \ \ \ \}}
+\DoxyCodeLine{00066\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=273pt]{utils_8h_a757befc984a4a8f8def938c4fe7c490e_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=240pt]{utils_8h_a757befc984a4a8f8def938c4fe7c490e_icgraph}
+\end{center}
+\end{figure}
+\Hypertarget{utils_8h_abe13b9e5f59f07f116219b159534a53a}\label{utils_8h_abe13b9e5f59f07f116219b159534a53a} 
+\index{utils.h@{utils.h}!source\_func@{source\_func}}
+\index{source\_func@{source\_func}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{source\_func()}{source\_func()}}
+{\footnotesize\ttfamily double source\+\_\+func (\begin{DoxyParamCaption}\item[{int}]{ex,  }\item[{double}]{x,  }\item[{double}]{y }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00041}{41}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 1)\ \textcolor{keywordflow}{return}\ (x\ *\ x\ +\ y\ *\ y)\ *\ std::exp(x\ *\ y);}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 2)\ \textcolor{keywordflow}{return}\ 0.0;}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 3)\ \textcolor{keywordflow}{return}\ 4.0;}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{if}\ (ex\ ==\ 4)\ \textcolor{keywordflow}{return}\ (x\ /\ y)\ +\ (y\ /\ x);}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{return}\ 0.0;}
+\DoxyCodeLine{00047\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{utils_8h_abe13b9e5f59f07f116219b159534a53a_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{utils_8h_a826e1b6d8f7888032cded335c8f5a8b2}\label{utils_8h_a826e1b6d8f7888032cded335c8f5a8b2} 
+\index{utils.h@{utils.h}!TOL@{TOL}}
+\index{TOL@{TOL}!utils.h@{utils.h}}
+\doxysubsubsection{\texorpdfstring{TOL}{TOL}}
+{\footnotesize\ttfamily const double TOL = 1e-\/7}
+
+
+
+Definition at line \mbox{\hyperlink{utils_8h_source_l00020}{20}} of file \mbox{\hyperlink{utils_8h_source}{utils.\+h}}.
+

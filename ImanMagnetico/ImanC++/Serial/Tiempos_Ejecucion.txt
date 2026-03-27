@@ -1,0 +1,22 @@
+Reporte de Tiempos de Ejecución - Benchmark Magnético
+====================================================
+
+--- 200 Iteraciones ---
+SOR          : 0,059 segundos
+Gauss-Seidel : 0,051 segundos
+Jacobi       : 0,049 segundos
+
+--- 2000 Iteraciones ---
+SOR          : 0,211 segundos
+Gauss-Seidel : 0,148 segundos
+Jacobi       : 0,111 segundos
+
+--- 10000 Iteraciones ---
+SOR          : 0,886 segundos
+Gauss-Seidel : 0,561 segundos
+Jacobi       : 0,391 segundos
+
+--- 30000 Iteraciones ---
+SOR          : 2,569 segundos
+Gauss-Seidel : 1,607 segundos
+Jacobi       : 1,091 segundos

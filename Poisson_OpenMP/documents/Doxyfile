@@ -1,0 +1,74 @@
+# ----------------------------------------------------------------------------
+# Información del proyecto
+# ----------------------------------------------------------------------------
+
+PROJECT_NAME           = "Taller OpenMP: Ecuación de Poisson 2D"
+PROJECT_NUMBER         = "v1.0"
+OUTPUT_DIRECTORY       = documents/doc_output
+
+# ----------------------------------------------------------------------------
+# Entrada del código fuente
+# ----------------------------------------------------------------------------
+
+INPUT                  = src include scripts
+FILE_PATTERNS          = *.cpp *.h *.py *.sh *.md
+RECURSIVE              = NO
+
+# ----------------------------------------------------------------------------
+# Extracción de documentación
+# ----------------------------------------------------------------------------
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+
+# ----------------------------------------------------------------------------
+# Documentación LaTeX (PDF)
+# ----------------------------------------------------------------------------
+
+GENERATE_LATEX         = YES
+USE_PDFLATEX           = YES
+LATEX_OUTPUT           = latex
+LATEX_BATCHMODE        = NO
+LATEX_HIDE_INDICES     = NO
+
+# ----------------------------------------------------------------------------
+# Documentación HTML (opcional)
+# ----------------------------------------------------------------------------
+
+GENERATE_HTML          = NO
+
+# ----------------------------------------------------------------------------
+# Imágenes (para usar \image latex en comentarios)
+# ----------------------------------------------------------------------------
+
+IMAGE_PATH             = imag
+
+# ----------------------------------------------------------------------------
+# Diagramas con Graphviz
+# ----------------------------------------------------------------------------
+
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+DOT_IMAGE_FORMAT       = png
+
+# ----------------------------------------------------------------------------
+# Estilo y formato
+# ----------------------------------------------------------------------------
+
+FULL_PATH_NAMES        = NO
+STRIP_FROM_PATH        = src graph
+ALWAYS_DETAILED_SEC    = YES
+TAB_SIZE               = 4
+
+# ----------------------------------------------------------------------------
+# Página principal opcional (por ejemplo README.md)
+# ----------------------------------------------------------------------------
+
+USE_MDFILE_AS_MAINPAGE = README.md

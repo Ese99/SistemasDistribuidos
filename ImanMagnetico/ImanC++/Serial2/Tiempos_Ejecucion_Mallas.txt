@@ -1,0 +1,19 @@
+Reporte de Tiempos de Ejecución - Refinamiento de Malla (30,000 Iters)
+=======================================================================
+
+--- Malla: 12 x 12 ---
+SOR          : ./benchmark.sh: line 33: 863176 Segmentation fault      (core dumped) ./exec_SOR $malla "SOR_M${malla}"
+0,072 segundos
+Gauss-Seidel : ./benchmark.sh: line 33: 863179 Segmentation fault      (core dumped) ./exec_GS $malla "GS_M${malla}"
+0,072 segundos
+Jacobi       : ./benchmark.sh: line 33: 863182 Segmentation fault      (core dumped) ./exec_Jacobi $malla "Jacobi_M${malla}"
+0,072 segundos
+
+--- Malla: 125 x 125 ---
+SOR          : 0,068 segundos
+Gauss-Seidel : 0,057 segundos
+Jacobi       : 0,052 segundos
+
+--- Malla: 1250 x 1250 ---
+SOR          : 2,736 segundos
+Gauss-Seidel : 

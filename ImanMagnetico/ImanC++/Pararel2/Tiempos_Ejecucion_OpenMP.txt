@@ -1,0 +1,38 @@
+REPORTE DE TIEMPOS OPENMP - Samuel
+==================================
+
+--- Malla: 125 x 125 ---
+Threads 12 | SOR: 0,181 s | GS: 0,177 s | Jacobi: 0,174 s
+Threads 24 | SOR: 0,215 s | GS: 0,214 s | Jacobi: 0,215 s
+Threads 48 | SOR: 0,334 s | GS: 0,336 s | Jacobi: 0,345 s
+Threads 64 | SOR: 0,404 s | GS: 0,424 s | Jacobi: 0,414 s
+
+--- Malla: 250 x 250 ---
+Threads 12 | SOR: 0,461 s | GS: 0,438 s | Jacobi: 0,432 s
+Threads 24 | SOR: 0,435 s | GS: 0,415 s | Jacobi: 0,418 s
+Threads 48 | SOR: 0,550 s | GS: 0,589 s | Jacobi: 0,562 s
+Threads 64 | SOR: 0,711 s | GS: 0,701 s | Jacobi: 0,703 s
+
+--- Malla: 500 x 500 ---
+Threads 12 | SOR: 1,518 s | GS: 1,384 s | Jacobi: 1,403 s
+Threads 24 | SOR: 1,280 s | GS: 1,205 s | Jacobi: 1,227 s
+Threads 48 | SOR: 1,342 s | GS: 1,327 s | Jacobi: 1,336 s
+Threads 64 | SOR: 1,554 s | GS: 1,627 s | Jacobi: 1,533 s
+
+--- Malla: 1000 x 1000 ---
+Threads 12 | SOR: 5,836 s | GS: 4,421 s | Jacobi: 4,417 s
+Threads 24 | SOR: 3,729 s | GS: 3,464 s | Jacobi: 3,446 s
+Threads 48 | SOR: 3,403 s | GS: 3,248 s | Jacobi: 3,234 s
+Threads 64 | SOR: 3,615 s | GS: 3,804 s | Jacobi: 3,433 s
+
+--- Malla: 1500 x 1500 ---
+Threads 12 | SOR: 10,860 s | GS: 9,825 s | Jacobi: 9,815 s
+Threads 24 | SOR: 7,863 s | GS: 7,355 s | Jacobi: 7,387 s
+Threads 48 | SOR: 6,988 s | GS: 6,636 s | Jacobi: 6,584 s
+Threads 64 | SOR: 7,596 s | GS: 7,181 s | Jacobi: 6,957 s
+
+--- Malla: 2000 x 2000 ---
+Threads 12 | SOR: 19,243 s | GS: 17,372 s | Jacobi: 17,300 s
+Threads 24 | SOR: 13,769 s | GS: 12,784 s | Jacobi: 12,729 s
+Threads 48 | SOR: 11,919 s | GS: 11,183 s | Jacobi: 11,295 s
+Threads 64 | SOR: 12,612 s | GS: 11,997 s | Jacobi: 12,043 s

@@ -1,0 +1,105 @@
+\doxysection{poisson\+\_\+task.\+cpp File Reference}
+\hypertarget{poisson__task_8cpp}{}\label{poisson__task_8cpp}\index{poisson\_task.cpp@{poisson\_task.cpp}}
+{\ttfamily \#include "{}utils.\+h"{}}\newline
+{\ttfamily \#include $<$omp.\+h$>$}\newline
+Include dependency graph for poisson\+\_\+task.\+cpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{poisson__task_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{poisson__task_8cpp_abb5f3f1601514bd726ddfcac4674a19c}{solve\+\_\+poisson}} (std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&T, const std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&source, int M, int N, double h, double k)
+\item 
+int \mbox{\hyperlink{poisson__task_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{poisson__task_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{poisson__task_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4} 
+\index{poisson\_task.cpp@{poisson\_task.cpp}!main@{main}}
+\index{main@{main}!poisson\_task.cpp@{poisson\_task.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{poisson__task_8cpp_source_l00037}{37}} of file \mbox{\hyperlink{poisson__task_8cpp_source}{poisson\+\_\+task.\+cpp}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{int}\ M\ =\ \mbox{\hyperlink{utils_8h_ac7be9ce03bb764dffe072ed5af62b92e}{VALOR\_M}},\ N\ =\ \mbox{\hyperlink{utils_8h_a0dcb2c0ef08f96be7263e18ff8753b80}{VALOR\_N}};}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ex\ =\ 1;\ ex\ <=\ 4;\ ++ex)\ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ std::vector<std::vector<double>>\ T,\ source;\ \textcolor{keywordtype}{double}\ h,\ k;}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a757befc984a4a8f8def938c4fe7c490e}{initialize\_grid}}(ex,\ M,\ N,\ T,\ h,\ k);\ \mbox{\hyperlink{utils_8h_a79d9220f935fca031b5fdc2cde56196a}{get\_source\_matrix}}(ex,\ M,\ N,\ source,\ h,\ k);}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{poisson__task_8cpp_abb5f3f1601514bd726ddfcac4674a19c}{solve\_poisson}}(T,\ source,\ M,\ N,\ h,\ k);}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{utils_8h_a0311806c38a7ae586545dc411ccd7bcd}{export\_to\_file}}(ex,\ T,\ h,\ k,\ M,\ N,\ \textcolor{stringliteral}{"{}task"{}});}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00046\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{poisson__task_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4_cgraph}
+\end{center}
+\end{figure}
+\Hypertarget{poisson__task_8cpp_abb5f3f1601514bd726ddfcac4674a19c}\label{poisson__task_8cpp_abb5f3f1601514bd726ddfcac4674a19c} 
+\index{poisson\_task.cpp@{poisson\_task.cpp}!solve\_poisson@{solve\_poisson}}
+\index{solve\_poisson@{solve\_poisson}!poisson\_task.cpp@{poisson\_task.cpp}}
+\doxysubsubsection{\texorpdfstring{solve\_poisson()}{solve\_poisson()}}
+{\footnotesize\ttfamily void solve\+\_\+poisson (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{T,  }\item[{const std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \&}]{source,  }\item[{int}]{M,  }\item[{int}]{N,  }\item[{double}]{h,  }\item[{double}]{k }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{poisson__task_8cpp_source_l00004}{4}} of file \mbox{\hyperlink{poisson__task_8cpp_source}{poisson\+\_\+task.\+cpp}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00004\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00005\ \ \ \ \ \textcolor{keywordtype}{double}\ delta\ =\ 1.0;}
+\DoxyCodeLine{00006\ \ \ \ \ \textcolor{keywordtype}{int}\ block\_size\ =\ std::max(10,\ M\ /\ 10);\ \textcolor{comment}{//\ Escala\ el\ bloque\ dinámicamente}}
+\DoxyCodeLine{00007\ \ \ \ \ \textcolor{keywordflow}{while}\ (delta\ >\ \mbox{\hyperlink{utils_8h_a826e1b6d8f7888032cded335c8f5a8b2}{TOL}})\ \{}
+\DoxyCodeLine{00008\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ max\_delta\ =\ 0.0;}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#pragma\ omp\ parallel\ shared(max\_delta)}}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \#pragma\ omp\ single}}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ bi\ =\ 1;\ bi\ <\ M;\ bi\ +=\ block\_size)\ \{}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ bj\ =\ 1;\ bj\ <\ N;\ bj\ +=\ block\_size)\ \{}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#pragma\ omp\ task\ shared(max\_delta)}}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ local\_delta\ =\ 0.0;}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ bi;\ i\ <\ std::min(bi\ +\ block\_size,\ M);\ ++i)\ \{}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ bj;\ j\ <\ std::min(bj\ +\ block\_size,\ N);\ ++j)\ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ T\_new\ =\ (((T[i+1][j]\ +\ T[i-\/1][j])\ *\ k*k)\ +\ ((T[i][j+1]\ +\ T[i][j-\/1])\ *\ h*h)\ -\/\ (source[i][j]\ *\ h*h\ *\ k*k))\ /\ (2.0\ *\ (h*h\ +\ k*k));}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ local\_delta\ =\ std::max(local\_delta,\ std::abs(T\_new\ -\/\ T[i][j]));}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T[i][j]\ =\ T\_new;}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#pragma\ omp\ critical}}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ max\_delta\ =\ std::max(max\_delta,\ local\_delta);\ \}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#pragma\ omp\ taskwait}}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ delta\ =\ max\_delta;}
+\DoxyCodeLine{00034\ \ \ \ \ \}}
+\DoxyCodeLine{00035\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=243pt]{poisson__task_8cpp_abb5f3f1601514bd726ddfcac4674a19c_icgraph}
+\end{center}
+\end{figure}

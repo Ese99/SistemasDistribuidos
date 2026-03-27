@@ -1,0 +1,9 @@
+Reporte de Tiempos de Ejecución - Taller OpenMP Poisson 2D
+==========================================================
+Secuencial          : 0,129 segundos
+Parallel For        : 0,407 segundos
+Critical            : 0,499 segundos
+Atomic              : 0,315 segundos
+Task                : 0,299 segundos
+
+Ejecución finalizada.

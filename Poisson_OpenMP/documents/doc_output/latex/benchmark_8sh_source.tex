@@ -1,0 +1,62 @@
+\doxysection{benchmark.\+sh}
+\hypertarget{benchmark_8sh_source}{}\label{benchmark_8sh_source}\index{benchmark.sh@{benchmark.sh}}
+\mbox{\hyperlink{benchmark_8sh}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00001}00001\ \#!/bin/bash}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00002}00002\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00003}00003\ METODOS=("{}poisson\_serial"{}\ "{}poisson\_parallel\_for"{}\ "{}poisson\_critical"{}\ "{}poisson\_atomic"{}\ "{}poisson\_task"{})}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00004}00004\ TAMANOS=(50\ 250\ 500)\ \#\ Para\ el\ clúster\ puedes\ cambiar\ a:\ (1000\ 2000\ 5000)}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00005}00005\ HILOS=(12\ 24\ 48\ 64)}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00006}00006\ LOG="{}benchmark\_cluster\_resultados.txt"{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00007}00007\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00008}00008\ echo\ "{}Metodo,Hilos,N,Tiempo(s)"{}\ >\ \$LOG}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00009}00009\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00010}00010\ echo\ "{}Iniciando\ Benchmark\ Multihilo..."{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00012}00012\ \#\ Limpiamos\ binarios\ previos}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00013}00013\ mkdir\ -\/p\ bin\ data\ imag}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00014}00014\ rm\ -\/f\ bin/*}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00016}00016\ for\ n\ in\ "{}\$\{TAMANOS[@]\}"{};\ do}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00017}00017\ \ \ \ \ echo\ "{}=========================================="{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00018}00018\ \ \ \ \ echo\ "{}\ \ Compilando\ para\ tamaño\ de\ Malla\ N=\$n"{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00019}00019\ \ \ \ \ echo\ "{}=========================================="{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00020}00020\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00021}00021\ \ \ \ \ \#\ 1.\ Compilar\ todo\ con\ el\ nuevo\ tamaño\ inyectado\ por\ preprocesador}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00022}00022\ \ \ \ \ for\ m\ in\ "{}\$\{METODOS[@]\}"{};\ do}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00023}00023\ \ \ \ \ \ \ \ \ g++\ -\/std=c++17\ -\/O3\ -\/Wall\ -\/Wextra\ -\/fopenmp\ -\/Isrc\ -\/DVALOR\_M=\$n\ -\/DVALOR\_N=\$n\ "{}src/\$m.cpp"{}\ -\/o\ "{}bin/\$m"{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00024}00024\ \ \ \ \ done}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00025}00025\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00026}00026\ \ \ \ \ \#\ 2.\ Ejecutar\ variando\ el\ número\ de\ hilos}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00027}00027\ \ \ \ \ for\ h\ in\ "{}\$\{HILOS[@]\}"{};\ do}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00028}00028\ \ \ \ \ \ \ \ \ export\ OMP\_NUM\_THREADS=\$h}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00029}00029\ \ \ \ \ \ \ \ \ echo\ "{}-\/-\/-\/\ Probando\ con\ \$h\ Hilos\ -\/-\/-\/"{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00030}00030\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00031}00031\ \ \ \ \ \ \ \ \ for\ m\ in\ "{}\$\{METODOS[@]\}"{};\ do}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00032}00032\ \ \ \ \ \ \ \ \ \ \ \ \ \#\ El\ método\ serial\ ignora\ OMP\_NUM\_THREADS,\ solo\ lo\ corremos\ 1\ vez\ por\ tamaño}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00033}00033\ \ \ \ \ \ \ \ \ \ \ \ \ if\ [[\ "{}\$m"{}\ ==\ "{}poisson\_serial"{}\ \&\&\ "{}\$h"{}\ !=\ "{}\$\{HILOS[0]\}"{}\ ]];\ then}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00034}00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ continue\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00035}00035\ \ \ \ \ \ \ \ \ \ \ \ \ fi}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ echo\ -\/n\ "{}\ \ Ejecutando\ \$m\ ...\ "{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00039}00039\ \ \ \ \ \ \ \ \ \ \ \ \ START=\$(date\ +\%s.\%N)}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00040}00040\ \ \ \ \ \ \ \ \ \ \ \ \ ./bin/\$m}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00041}00041\ \ \ \ \ \ \ \ \ \ \ \ \ END=\$(date\ +\%s.\%N)}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00043}00043\ \ \ \ \ \ \ \ \ \ \ \ \ DURACION=\$(echo\ "{}\$END\ -\/\ \$START"{}\ |\ bc)}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \ \ echo\ "{}Hecho\ en\ \$DURACION\ s"{}}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00045}00045\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Formato\ CSV\ final}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ if\ [[\ "{}\$m"{}\ ==\ "{}poisson\_serial"{}\ ]];\ then}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ echo\ "{}\$m,1,\$n,\$DURACION"{}\ >>\ \$LOG}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ else}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ echo\ "{}\$m,\$h,\$n,\$DURACION"{}\ >>\ \$LOG}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ \ \ fi}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00052}00052\ \ \ \ \ \ \ \ \ done}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00053}00053\ \ \ \ \ done}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00054}00054\ done}
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{benchmark_8sh_source_l00056}00056\ echo\ "{}Benchmark\ completado.\ Revisa\ \$LOG"{}}
+
+\end{DoxyCode}
